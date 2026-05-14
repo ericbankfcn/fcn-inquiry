@@ -346,7 +346,6 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
         <div class="f" style="margin-bottom:10px"><label>員工編號</label><input type="text" id="adm-eid" placeholder="6碼員工編號" maxlength="6"></div>
         <div class="f" style="margin-bottom:16px"><label>管理員密碼</label><input type="password" id="adm-pw" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')doLogin()"></div>
         <button class="btn bg" onclick="doLogin()" style="width:100%;justify-content:center;padding:10px">登入</button>
-        <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:10px">預設密碼：admin2026</p>
       </div>
     </div>
   </div>
@@ -557,6 +556,8 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
 // CONSTANTS & DATA
 // ════════════════════════════════════
 const PW = 'admin2026';
+// ▼ 管理員員工編號白名單（下次提供後填入此處）
+const ADMIN_IDS = [];  // e.g. ['A12345','B67890']
 const SK = 'fcn_v4';
 const BBG = ['NVDA UW','GOOGL UW','TSLA UW','TSM UN','META UW','MSFT UW','AMZN UW','AAPL UW'];
 
@@ -808,12 +809,17 @@ function submitFlw() {
 // ADMIN LOGIN
 // ════════════════════════════════════
 function doLogin() {
-  if (document.getElementById('adm-pw').value === PW) {
+  const ei = document.getElementById('adm-eid').value.trim();
+  const pwOk = document.getElementById('adm-pw').value === PW;
+  const idOk = ADMIN_IDS.length === 0 || ADMIN_IDS.includes(ei);
+  if (!ei) { sal('login-al','err','⚠️ 請輸入員工編號'); return; }
+  if (pwOk && idOk) {
     document.getElementById('adm-login').style.display = 'none';
     document.getElementById('adm-panel').style.display = 'block';
     loadDefaults(); renderAdmList(); renderStats();
   } else {
-    sal('login-al','err','❌ 密碼錯誤，請重試');
+    if (!pwOk) sal('login-al','err','❌ 密碼錯誤，請重試');
+    else sal('login-al','err','❌ 此員工編號無管理員權限');
   }
 }
 function doLogout() {
