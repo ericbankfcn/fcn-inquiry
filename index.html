@@ -6,1432 +6,1072 @@
 <title>FCN 詢價系統</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#3dbfa0;--gd:#2a9d80;--gl:#e6f7f3;--gll:#f0faf7;--gb:#b2e4d8;
+  --or:#e07b39;--orl:#fff4ed;
+  --am:#d97706;--aml:#fffbeb;--amb:#fde68a;
+  --rd:#dc2626;--rdl:#fef2f2;--rdb:#fca5a5;
+  --bl:#2563eb;--bll:#eff6ff;--blb:#bfdbfe;
+  --t:#1a1a1a;--t2:#4b5563;--t3:#9ca3af;
+  --bd:#e5e7eb;--bg:#f3f4f6;--wh:#ffffff;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shm:0 4px 12px rgba(0,0,0,.08);
+  --r:10px;--rs:7px;
+}
+html{font-size:15px}
+body{font-family:'Noto Sans TC',-apple-system,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* TOPBAR */
+.top{background:#fff;border-bottom:1px solid var(--bd);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50;box-shadow:var(--sh)}
+.logo{width:30px;height:30px;background:linear-gradient(135deg,var(--g),var(--gd));border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:14px;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:9px}
+.bn{font-size:15px;font-weight:700}
+.bs{font-size:11px;color:var(--t3);margin-left:2px}
+.nav{display:flex;gap:2px;background:var(--bg);padding:3px;border-radius:10px}
+.nb{padding:5px 14px;border-radius:7px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:transparent;transition:.15s;font-family:inherit}
+.nb.on{background:#fff;color:var(--t);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 
-:root {
-  --green: #3dbfa0;
-  --green-dark: #2a9d80;
-  --green-bg: #f0faf7;
-  --green-tag-bg: #e6f7f3;
-  --green-tag-border: #b2e4d8;
-  --green-tag-text: #2a9d80;
-  --orange: #e07b39;
-  --orange-light: #f5a469;
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b7280;
-  --text-label: #9ca3af;
-  --border: #e5e7eb;
-  --border-focus: #3dbfa0;
-  --bg-page: #f3f4f6;
-  --bg-card: #ffffff;
-  --bg-input: #ffffff;
-  --bg-input-disabled: #f9fafb;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08);
-  --radius-card: 12px;
-  --radius-input: 8px;
-  --radius-tag: 20px;
-  --amber: #d97706;
-  --amber-bg: #fffbeb;
-  --amber-border: #fde68a;
-  --red: #dc2626;
-  --red-bg: #fef2f2;
-  --blue: #2563eb;
-  --blue-bg: #eff6ff;
-}
+/* LAYOUT */
+.pg{display:none}.pg.on{display:block}
+.wrap{max-width:980px;margin:0 auto;padding:22px 16px}
 
-html { font-size: 15px; }
-body {
-  font-family: 'Noto Sans TC', -apple-system, sans-serif;
-  background: var(--bg-page);
-  color: var(--text-primary);
-  min-height: 100vh;
-  line-height: 1.5;
-}
+/* CARD */
+.card{background:var(--wh);border-radius:var(--r);border:1px solid var(--bd);box-shadow:var(--sh);margin-bottom:14px;overflow:hidden}
+.chd{padding:13px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;background:#fafafa;gap:10px}
+.chd h2{font-size:14px;font-weight:700;color:var(--t)}
+.chd p{font-size:11px;color:var(--t3);margin-top:2px}
+.cbd{padding:18px 20px}
 
-/* ─── TOPBAR ─── */
-.topbar {
-  background: #fff;
-  border-bottom: 1px solid var(--border);
-  padding: 0 32px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-.topbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.topbar-brand .logo {
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; color: white; font-weight: 700;
-}
-.topbar-brand .brand-name {
-  font-size: 15px; font-weight: 600; color: var(--text-primary);
-}
-.topbar-brand .brand-sub {
-  font-size: 12px; color: var(--text-secondary); margin-left: 4px;
-}
-.nav-tabs {
-  display: flex;
-  gap: 2px;
-  background: var(--bg-page);
-  padding: 3px;
-  border-radius: 10px;
-}
-.nav-tab {
-  padding: 6px 18px;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.18s;
-  border: none;
-  background: transparent;
-  white-space: nowrap;
-}
-.nav-tab.active {
-  background: #fff;
-  color: var(--text-primary);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.nav-tab:hover:not(.active) { color: var(--text-primary); }
+/* SECTION TITLE */
+.stl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #f0f0f0}
 
-/* ─── LAYOUT ─── */
-.page { display: none; }
-.page.active { display: block; }
-.container { max-width: 960px; margin: 0 auto; padding: 28px 20px; }
+/* GRID */
+.row{display:grid;gap:11px;margin-bottom:11px}
+.row:last-child{margin-bottom:0}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.c5{grid-template-columns:1fr 1fr 1fr 1fr 1fr}
 
-/* ─── SECTION CARD ─── */
-.section-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  margin-bottom: 20px;
-  overflow: hidden;
-}
+/* FIELD */
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:11px;font-weight:600;color:var(--t2)}
+.f label .req{color:var(--rd);margin-left:1px}
+.f label .opt{font-weight:400;color:var(--t3)}
+.f input,.f select{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:var(--rs);font-size:13px;font-family:inherit;color:var(--t);background:#fff;transition:.15s;appearance:none;-webkit-appearance:none}
+.f select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%236b7280' d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;padding-right:26px}
+.f input:focus,.f select:focus{outline:none;border-color:var(--gd);box-shadow:0 0 0 3px rgba(61,191,160,.1)}
+.f input[readonly],.f input:disabled{background:#f9fafb;color:var(--t3);cursor:default}
+.f input.locked{background:var(--gll);color:var(--gd);border-color:var(--gb);font-weight:600}
+.f .hint{font-size:11px;color:var(--or);margin-top:2px}
 
-/* ─── FCN 商品條件 (Advisor view) ─── */
-.condition-header {
-  padding: 20px 28px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-.condition-header h1 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-.condition-header .qdate {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.condition-header .qdate span {
-  color: var(--green);
-  font-weight: 500;
-}
-.btn-edit {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  white-space: nowrap;
-}
-.btn-edit:hover { border-color: var(--green); color: var(--green); }
-.btn-edit .icon { font-size: 14px; }
+/* MUTEX */
+.mx{background:var(--gll);border:1px solid var(--gb);border-radius:8px;padding:12px 14px;margin-bottom:11px}
+.mx-lbl{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.mx-badge{background:var(--gd);color:#fff;font-size:10px;padding:1px 7px;border-radius:8px}
 
-.condition-body { padding: 24px 28px; }
-.cond-section { margin-bottom: 22px; }
-.cond-section:last-child { margin-bottom: 0; }
-.cond-section-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
+/* BUTTONS */
+.btn{padding:7px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:.15s;font-family:inherit;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.bg{background:var(--gd);color:#fff}.bg:hover{background:var(--g)}
+.ba{background:var(--am);color:#fff}.ba:hover{opacity:.85}
+.br{background:var(--rd);color:#fff}.br:hover{opacity:.85}
+.bw{background:#fff;border:1px solid var(--bd);color:var(--t2)}.bw:hover{background:var(--bg)}
+.bb{background:var(--bl);color:#fff}.bb:hover{opacity:.85}
+.bsm{padding:4px 11px;font-size:12px}
+.bxs{padding:3px 8px;font-size:11px}
+.bgrp{display:flex;gap:7px;flex-wrap:wrap;padding-top:6px}
 
-.cond-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px 0;
-}
-.cond-grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px 0;
-}
+/* ALERTS */
+.al{padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.al-ok{background:var(--gl);color:var(--gd);border:1px solid var(--gb)}
+.al-err{background:var(--rdl);color:var(--rd);border:1px solid var(--rdb)}
+.al-info{background:var(--bll);color:var(--bl);border:1px solid var(--blb)}
+.al-warn{background:var(--aml);color:var(--am);border:1px solid var(--amb)}
 
-.cond-item {}
-.cond-item .cond-label {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--text-label);
-  margin-bottom: 5px;
-}
-.cond-item .cond-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.cond-item .cond-value.highlight {
-  font-size: 22px;
-  color: var(--orange);
-}
-.cond-item .cond-value.dynamic-tag {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.dynamic-badge {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--orange);
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  padding: 1px 7px;
-  border-radius: 10px;
-}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.bp{background:#f3f4f6;color:#6b7280;border:1px solid var(--bd)}
+.bq{background:var(--bll);color:var(--bl);border:1px solid var(--blb)}
+.bpub{background:var(--gl);color:var(--gd);border:1px solid var(--gb)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block}
 
-.bbg-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
-.bbg-tag {
-  display: inline-flex;
-  align-items: center;
-  background: var(--green-tag-bg);
-  border: 1px solid var(--green-tag-border);
-  color: var(--green-tag-text);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 5px 13px;
-  border-radius: var(--radius-tag);
-  letter-spacing: 0.3px;
-}
+/* TAG */
+.tag{display:inline-flex;align-items:center;background:var(--gl);border:1px solid var(--gb);color:var(--gd);font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
 
-/* ─── INQUIRY FORM ─── */
-.form-header {
-  padding: 20px 28px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.form-header h2 {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.form-header p { font-size: 13px; color: var(--text-secondary); margin-top: 3px; }
+/* QUOTE CARD (public board) */
+.qc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:10px;overflow:hidden}
+.qc-hd{padding:10px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#fafffe}
+.qc-bd{padding:14px 16px}
+.qc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.qi .ql{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);margin-bottom:3px}
+.qi .qv{font-size:16px;font-weight:700;color:var(--t)}
+.qi .qv.hi{color:var(--or);font-size:20px}
+.qi .qv.bl{color:var(--bl)}
+.qc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.qc-meta{font-size:11px;color:var(--t3);margin-bottom:8px;line-height:1.6}
+.qc-foot{display:flex;gap:7px;padding-top:8px;border-top:1px solid #f5f5f5;flex-wrap:wrap;align-items:center}
 
-.form-body { padding: 24px 28px; }
-.form-section { margin-bottom: 24px; }
-.form-section:last-child { margin-bottom: 0; }
-.form-section-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
-}
+/* INQ ROW (admin) */
+.iq{border:1px solid var(--bd);border-radius:8px;padding:11px 14px;margin-bottom:8px;background:#fff;transition:.15s}
+.iq:hover{border-color:var(--gb);box-shadow:var(--sh)}
+.iq-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.iq-info{flex:1;min-width:160px}
+.iq-id{font-size:12px;font-weight:700;color:var(--t)}
+.iq-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.iq-tags{margin-top:5px;display:flex;flex-wrap:wrap;gap:3px}
+.iq-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+.im .ml{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
+.im .mv{font-size:12px;font-weight:600;color:var(--t)}
+.im .mv.hi{color:var(--or)}
+.im .mv.bl{color:var(--bl)}
+.iq-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
 
-.form-row { display: grid; gap: 14px; margin-bottom: 14px; }
-.form-row:last-child { margin-bottom: 0; }
-.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-.cols-2 { grid-template-columns: 1fr 1fr; }
-.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+/* MODAL */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.38);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:12px;padding:24px;width:92%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal.wide{max-width:640px}
+.m-icon{font-size:40px;margin-bottom:10px;text-align:center}
+.m-title{font-size:16px;font-weight:700;color:var(--t);margin-bottom:6px}
+.m-desc{font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6}
+.m-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
 
-.form-field { display: flex; flex-direction: column; gap: 5px; }
-.form-field label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  letter-spacing: 0.2px;
-}
-.form-field label .req { color: var(--red); margin-left: 2px; }
+/* LOGIN */
+.lw{max-width:400px;margin:50px auto}
+.lt{background:linear-gradient(135deg,var(--g),var(--gd));padding:26px;text-align:center;color:#fff}
+.lt .li{font-size:34px;margin-bottom:8px}
+.lt h2{font-size:18px;font-weight:700;margin-bottom:3px}
+.lt p{font-size:11px;opacity:.8}
+.lb{padding:22px}
 
-.form-field input,
-.form-field select {
-  width: 100%;
-  padding: 9px 13px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-input);
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--bg-input);
-  transition: border-color 0.18s, box-shadow 0.18s;
-  appearance: none;
-  -webkit-appearance: none;
-}
-.form-field select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-}
-.form-field input:focus,
-.form-field select:focus {
-  outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(61,191,160,0.12);
-}
-.form-field input:disabled,
-.form-field input[readonly] {
-  background: var(--bg-input-disabled);
-  color: var(--text-secondary);
-  cursor: default;
-}
-.form-field .field-hint {
-  font-size: 11px;
-  color: var(--orange);
-  margin-top: 2px;
-}
+/* LOCK */
+.lock{background:var(--aml);border:1px solid var(--amb);border-radius:7px;padding:12px 14px;margin-top:12px}
+.lock-t{font-size:11px;font-weight:700;color:var(--am);display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.lock-b{background:var(--am);color:#fff;font-size:10px;padding:1px 7px;border-radius:8px}
 
-/* ─── BUTTONS ─── */
-.btn-group { display: flex; align-items: center; gap: 10px; padding-top: 6px; }
+/* STATS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px}
+.sc{background:#fff;border:1px solid var(--bd);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh)}
+.sn{font-size:24px;font-weight:700;color:var(--gd)}
+.sl{font-size:11px;color:var(--t3);margin-top:2px}
 
-.btn-primary {
-  padding: 10px 24px;
-  background: var(--green-dark);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: inherit;
-}
-.btn-primary:hover { background: var(--green); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(61,191,160,0.3); }
-.btn-primary:active { transform: translateY(0); }
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{background:#f9fafb;padding:8px 11px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
+tbody td{padding:8px 11px;border-bottom:1px solid #f3f4f6;color:var(--t);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#fafffe}
+.tg{color:var(--gd);font-weight:700}
+.tb{color:var(--bl);font-weight:600}
+.to{color:var(--or);font-weight:600}
 
-.btn-secondary {
-  padding: 10px 20px;
-  background: #fff;
-  color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: inherit;
-}
-.btn-secondary:hover { border-color: #d1d5db; background: #f9fafb; }
+/* ADMIN ROW */
+.ar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ar h1{font-size:16px;font-weight:700}
 
-.btn-amber {
-  padding: 8px 18px;
-  background: var(--amber);
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: inherit;
-}
-.btn-amber:hover { opacity: 0.88; }
+/* EMPTY */
+.empty{text-align:center;padding:36px 20px;color:var(--t3)}
+.ei{font-size:32px;opacity:.35;margin-bottom:8px}
 
-.btn-danger {
-  padding: 8px 18px;
-  background: #fff;
-  color: var(--red);
-  border: 1px solid #fca5a5;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.18s;
-  font-family: inherit;
-}
-.btn-danger:hover { background: var(--red-bg); }
-
-/* ─── ALERTS ─── */
-.alert {
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.alert-error { background: var(--red-bg); color: var(--red); border: 1px solid #fca5a5; }
-.alert-success { background: var(--green-bg); color: var(--green-dark); border: 1px solid #a7f3d0; }
-
-/* ─── LOCK AREA ─── */
-.lock-area {
-  background: #fffbeb;
-  border: 1px solid var(--amber-border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 16px;
-}
-.lock-area-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--amber);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.lock-badge {
-  font-size: 11px;
-  background: var(--amber);
-  color: #fff;
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-/* ─── DIVIDER ─── */
-.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-/* ─── TABLE ─── */
-.table-wrap { overflow-x: auto; }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-thead th {
-  background: #f9fafb;
-  padding: 10px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-tbody td {
-  padding: 10px 14px;
-  border-bottom: 1px solid #f3f4f6;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: #f9fffe; }
-.td-coupon { color: var(--green-dark); font-weight: 700; }
-.td-reoffer { color: var(--blue); font-weight: 600; }
-
-/* ─── MODAL ─── */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: 200;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(2px);
-}
-.modal-overlay.show { display: flex; }
-.modal-box {
-  background: #fff;
-  border-radius: 16px;
-  padding: 32px 28px;
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-}
-.modal-icon { font-size: 52px; margin-bottom: 14px; }
-.modal-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-.modal-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 22px; line-height: 1.6; }
-
-/* ─── ADMIN LOGIN ─── */
-.login-wrap {
-  max-width: 420px;
-  margin: 60px auto;
-}
-.login-card { border-radius: var(--radius-card); overflow: hidden; }
-.login-header {
-  background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
-  padding: 28px;
-  text-align: center;
-  color: #fff;
-}
-.login-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-.login-header p { font-size: 13px; opacity: 0.8; }
-.login-body { padding: 28px; }
-
-/* ─── STATS ROW ─── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-bottom: 20px;
-}
-.stat-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px 18px;
-  box-shadow: var(--shadow-card);
-}
-.stat-card .stat-num { font-size: 28px; font-weight: 700; color: var(--green-dark); }
-.stat-card .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
-
-/* ─── TABLE HEADER ACTIONS ─── */
-.table-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.table-header h2 { font-size: 15px; font-weight: 600; color: var(--text-primary); }
-.table-actions { display: flex; gap: 8px; }
-
-/* ─── EMPTY STATE ─── */
-.empty-state {
-  text-align: center;
-  padding: 50px 20px;
-  color: var(--text-secondary);
-}
-.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
-.empty-state p { font-size: 14px; }
-
-/* ─── ADMIN HEADER ─── */
-.admin-toprow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-.admin-toprow h1 { font-size: 18px; font-weight: 600; color: var(--text-primary); }
-.admin-toprow .logout-btn {
-  font-size: 13px; color: var(--text-secondary);
-  background: none; border: none; cursor: pointer; padding: 6px 12px;
-  border-radius: 6px; transition: all 0.18s;
-}
-.admin-toprow .logout-btn:hover { background: #f3f4f6; color: var(--text-primary); }
-
-/* EDIT PANEL */
-.edit-panel-title {
-  font-size: 16px; font-weight: 600;
-  display: flex; align-items: center; gap: 8px;
-  margin-bottom: 4px;
-}
-.edit-panel-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
-
-.form-btn-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
-  margin-top: 20px;
-}
-
-/* No record row */
-.no-records td {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-secondary);
-  font-size: 14px;
-}
+hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
 </style>
 </head>
 <body>
 
 <!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-brand">
+<div class="top">
+  <div class="brand">
     <div class="logo">F</div>
-    <span class="brand-name">FCN 詢價系統</span>
-    <span class="brand-sub">財富管理部</span>
+    <span class="bn">FCN 詢價系統</span>
+    <span class="bs">財富管理部</span>
   </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchPage('advisor')">理專詢價</button>
-    <button class="nav-tab" onclick="switchPage('admin')">管理員</button>
+  <div class="nav">
+    <button class="nb on" onclick="sw('adv')">📋 理專詢價</button>
+    <button class="nb" onclick="sw('adm')">🔒 管理員</button>
   </div>
 </div>
 
-<!-- ═══════════════ ADVISOR PAGE ═══════════════ -->
-<div class="page active" id="pg-advisor">
-  <div class="container">
+<!-- ═══════════ ADVISOR PAGE ═══════════ -->
+<div class="pg on" id="pg-adv">
+<div class="wrap">
 
-    <!-- FCN 商品條件 -->
-    <div class="section-card">
-      <div class="condition-header">
+  <!-- 公開報價牆 -->
+  <div class="card">
+    <div class="chd">
+      <div><h2>📢 目前公布報價</h2><p>管理員已公布的報價，可點「我有跟單意願」申請</p></div>
+    </div>
+    <div class="cbd" id="pub-board">
+      <div class="empty"><div class="ei">📭</div><p>目前尚無公布報價</p></div>
+    </div>
+  </div>
+
+  <!-- 我的詢價紀錄 -->
+  <div class="card">
+    <div class="chd">
+      <div><h2>📑 我的詢價紀錄</h2><p>輸入員工編號查詢詢價狀態，管理員公布後可確認報價</p></div>
+    </div>
+    <div class="cbd">
+      <div style="display:flex;gap:9px;margin-bottom:14px;align-items:flex-end">
+        <div class="f" style="flex:1;max-width:220px">
+          <label>員工編號</label>
+          <input type="text" id="lu-empid" placeholder="輸入 6 碼員工編號" maxlength="6">
+        </div>
+        <button class="btn bw bsm" onclick="lookupMine()">查詢</button>
+      </div>
+      <div id="my-list">
+        <div class="empty"><div class="ei">🔍</div><p>輸入員工編號後查詢</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 填寫新詢價 -->
+  <div class="card">
+    <div class="chd">
+      <div><h2>📝 填寫新詢價</h2><p>填寫完成送出後，管理員將彙整向上手銀行詢價</p></div>
+    </div>
+    <div class="cbd">
+      <div id="adv-al"></div>
+
+      <div class="stl">理專資訊</div>
+      <div class="row c3">
+        <div class="f"><label>理專姓名<span class="req">*</span></label><input type="text" id="fn" placeholder="請輸入姓名"></div>
+        <div class="f"><label>員工編號<span class="req">*</span></label><input type="text" id="fe" placeholder="6碼" maxlength="6"></div>
+        <div class="f"><label>分行<span class="req">*</span></label><input type="text" id="fb" placeholder="請輸入分行名稱"></div>
+      </div>
+
+      <hr>
+      <div class="stl">報價條件</div>
+      <div class="row c4">
+        <div class="f">
+          <label>Currency<span class="req">*</span></label>
+          <select id="fcy">
+            <option value="">請選擇</option>
+            <option>USD</option><option>EUR</option><option>JPY</option><option>AUD</option>
+          </select>
+        </div>
+        <div class="f"><label>Wrapper</label><input type="text" value="EMTN" readonly></div>
+        <div class="f">
+          <label>Tenor (m)<span class="req">*</span></label>
+          <select id="ftn">
+            <option value="">請選擇</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+            <option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+        </div>
+        <div class="f"><label>KO Type</label><input type="text" value="Daily Memory" readonly class="locked"></div>
+      </div>
+      <div class="row c4">
+        <div class="f">
+          <label>Barrier Type<span class="req">*</span></label>
+          <select id="fbt"><option value="">請選擇</option><option>AKI</option><option>EKI</option></select>
+        </div>
+        <div class="f"><label>Strike (%)<span class="req">*</span></label><input type="number" id="fsk" placeholder="e.g. 80" step="0.01"></div>
+        <div class="f"><label>KI Barrier (%)<span class="req">*</span></label><input type="number" id="fki" placeholder="e.g. 70" step="0.01"></div>
+        <div class="f">
+          <label>Guaranteed Periods<span class="req">*</span></label>
+          <select id="fgp">
+            <option value="">請選擇</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8</option>
+            <option>9</option><option>10</option><option>11</option><option>12</option>
+          </select>
+        </div>
+      </div>
+      <div class="row c4">
+        <div class="f"><label>KO Barrier (%)<span class="req">*</span></label><input type="number" id="fko" placeholder="e.g. 100" step="0.01"></div>
+        <div></div><div></div><div></div>
+      </div>
+
+      <div class="stl" style="margin-top:4px">標的 BBG Code（最少選 1 個，不可重複）</div>
+      <div class="row c5">
+        <div class="f"><label>BBG Code 1<span class="req">*</span></label><select id="fb1" onchange="syncBBG('f')"><option value="">請選擇</option></select></div>
+        <div class="f"><label>BBG Code 2 <span class="opt">選填</span></label><select id="fb2" onchange="syncBBG('f')"><option value="">— 不選 —</option></select></div>
+        <div class="f"><label>BBG Code 3 <span class="opt">選填</span></label><select id="fb3" onchange="syncBBG('f')"><option value="">— 不選 —</option></select></div>
+        <div class="f"><label>BBG Code 4 <span class="opt">選填</span></label><select id="fb4" onchange="syncBBG('f')"><option value="">— 不選 —</option></select></div>
+        <div class="f"><label>BBG Code 5 <span class="opt">選填</span></label><select id="fb5" onchange="syncBBG('f')"><option value="">— 不選 —</option></select></div>
+      </div>
+
+      <!-- UF / Coupon 互斥 -->
+      <div class="mx">
+        <div class="mx-lbl">💡 UF 與 Coupon p.a. 二擇一填寫 <span class="mx-badge">互斥</span></div>
+        <div class="row c2">
+          <div class="f">
+            <label>UF (%) <span class="opt">填 UF 則 Coupon 鎖定</span></label>
+            <input type="number" id="fuf" step="0.01" placeholder="請輸入 UF" oninput="onMx('uf')">
+            <div class="hint" id="uf-hint"></div>
+          </div>
+          <div class="f">
+            <label>Coupon p.a. (%) <span class="opt">填 Coupon 則 UF 鎖定</span></label>
+            <input type="number" id="fcp" step="0.01" placeholder="請輸入 Coupon" oninput="onMx('cp')">
+          </div>
+        </div>
+      </div>
+
+      <hr>
+      <div class="stl">其他資訊</div>
+      <div class="row c3">
+        <div class="f"><label>客戶名稱 <span class="opt">選填</span></label><input type="text" id="fcl" placeholder="選填"></div>
+        <div class="f"><label>詢價金額 (USD) <span class="opt">選填</span></label><input type="number" id="fam" placeholder="e.g. 100000"></div>
+        <div class="f"><label>備註 <span class="opt">選填</span></label><input type="text" id="fnt" placeholder="選填"></div>
+      </div>
+
+      <div class="bgrp">
+        <button class="btn bg" onclick="submitInq()">送出詢價</button>
+        <button class="btn bw" onclick="resetForm()">清除</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════ ADMIN PAGE ═══════════ -->
+<div class="pg" id="pg-adm">
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <div id="adm-login" class="lw">
+    <div class="card" style="overflow:hidden">
+      <div class="lt">
+        <div class="li">🔒</div>
+        <h2>管理員登入</h2>
+        <p>財富管理部專用後台</p>
+      </div>
+      <div class="lb">
+        <div id="login-al"></div>
+        <div class="f" style="margin-bottom:10px"><label>員工編號</label><input type="text" id="adm-eid" placeholder="6碼員工編號" maxlength="6"></div>
+        <div class="f" style="margin-bottom:16px"><label>管理員密碼</label><input type="password" id="adm-pw" placeholder="請輸入密碼" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="btn bg" onclick="doLogin()" style="width:100%;justify-content:center;padding:10px">登入</button>
+        <p style="text-align:center;font-size:11px;color:var(--t3);margin-top:10px">預設密碼：admin2026</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="adm-panel" style="display:none">
+    <div class="ar">
+      <h1>管理員面板</h1>
+      <button class="btn bw bsm" onclick="doLogout()">登出</button>
+    </div>
+
+    <!-- STATS -->
+    <div class="sg">
+      <div class="sc"><div class="sn" id="st-tot">0</div><div class="sl">總詢價筆數</div></div>
+      <div class="sc"><div class="sn" id="st-pnd">0</div><div class="sl">待報價</div></div>
+      <div class="sc"><div class="sn" id="st-pub">0</div><div class="sl">已公布</div></div>
+      <div class="sc"><div class="sn" id="st-flw">0</div><div class="sl">跟單意願總數</div></div>
+    </div>
+
+    <!-- ① 編輯 FCN 預設條件 -->
+    <div class="card">
+      <div class="chd" style="cursor:pointer" onclick="toggleEdit()">
         <div>
-          <h1>FCN 商品條件</h1>
-          <div class="qdate">報價基準日期：<span id="v-qdate">—</span></div>
+          <h2>⚙️ 編輯 FCN 預設條件</h2>
+          <p>管理員專用・設定後理專填寫詢價時以此為預設值</p>
         </div>
-        <button class="btn-edit" onclick="openEditPanel()">
-          <span class="icon">✏️</span> 編輯條件（管理員）
-        </button>
+        <span id="edit-arrow" style="font-size:18px;color:var(--t3);transition:.2s">▶</span>
       </div>
-      <div class="condition-body">
+      <div id="edit-panel" style="display:none">
+      <div class="cbd">
+        <div id="edit-al"></div>
 
-        <!-- 基本資訊 -->
-        <div class="cond-section">
-          <div class="cond-section-title">基本資訊</div>
-          <div class="cond-grid">
-            <div class="cond-item">
-              <div class="cond-label">Currency</div>
-              <div class="cond-value" id="v-currency">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">Wrapper</div>
-              <div class="cond-value" id="v-wrapper">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">Tenor (M)</div>
-              <div class="cond-value" id="v-tenor">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">Strike (%)</div>
-              <div class="cond-value" id="v-strike">—</div>
-            </div>
-          </div>
-          <div style="margin-top:18px">
-            <div class="cond-item" style="margin-bottom:8px">
-              <div class="cond-label">BBG Codes（標的）</div>
-            </div>
-            <div class="bbg-tags" id="v-bbg"></div>
-          </div>
-          <div class="cond-grid" style="margin-top:18px; grid-template-columns: 1fr 1fr 1fr 1fr;">
-            <div class="cond-item">
-              <div class="cond-label">Barrier Type</div>
-              <div class="cond-value" id="v-barrier">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">KI Barrier (%)</div>
-              <div class="cond-value" id="v-ki">—</div>
-            </div>
-            <div></div><div></div>
-          </div>
+        <div class="stl">報價基本資訊</div>
+        <div class="row c4">
+          <div class="f"><label>Currency</label>
+            <select id="ec-cy"><option>USD</option><option>EUR</option><option>JPY</option><option>AUD</option></select></div>
+          <div class="f"><label>Wrapper</label><input type="text" value="EMTN" readonly></div>
+          <div class="f"><label>Tenor (m)</label>
+            <select id="ec-tn">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+              <option>9</option><option>10</option><option>11</option><option>12</option>
+            </select></div>
+          <div class="f"><label>KO Type</label><input type="text" value="Daily Memory" readonly class="locked"></div>
+        </div>
+        <div class="row c4">
+          <div class="f"><label>Barrier Type</label>
+            <select id="ec-bt"><option>AKI</option><option>EKI</option></select></div>
+          <div class="f"><label>Strike (%)</label><input type="number" id="ec-sk" step="0.01" placeholder="e.g. 80"></div>
+          <div class="f"><label>KI Barrier (%)</label><input type="number" id="ec-ki" step="0.01" placeholder="e.g. 70"></div>
+          <div class="f"><label>Guaranteed Periods</label>
+            <select id="ec-gp">
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+              <option>9</option><option>10</option><option>11</option><option>12</option>
+            </select></div>
+        </div>
+        <div class="row c4">
+          <div class="f"><label>KO Barrier (%)</label><input type="number" id="ec-ko" step="0.01" placeholder="e.g. 100"></div>
+          <div></div><div></div><div></div>
         </div>
 
-        <hr class="divider">
-
-        <!-- KO 條件 -->
-        <div class="cond-section">
-          <div class="cond-section-title">KO 條件</div>
-          <div class="cond-grid">
-            <div class="cond-item">
-              <div class="cond-label">KO Type</div>
-              <div class="cond-value" id="v-kotype">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">Guaranteed Periods</div>
-              <div class="cond-value" id="v-gp">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">KO Barrier (%)</div>
-              <div class="cond-value" id="v-ko">—</div>
-            </div>
-            <div class="cond-item">
-              <div class="cond-label">UF (%) <span class="dynamic-badge">動態</span></div>
-              <div class="cond-value highlight" id="v-uf">—</div>
-            </div>
-          </div>
+        <div class="stl" style="margin-top:4px">預設標的 BBG CODE</div>
+        <div class="row c5">
+          <div class="f"><label>BBG Code 1</label><select id="eb1" onchange="syncBBG('e')"><option value="">請選擇</option></select></div>
+          <div class="f"><label>BBG Code 2</label><select id="eb2" onchange="syncBBG('e')"><option value="">— 不選 —</option></select></div>
+          <div class="f"><label>BBG Code 3</label><select id="eb3" onchange="syncBBG('e')"><option value="">— 不選 —</option></select></div>
+          <div class="f"><label>BBG Code 4</label><select id="eb4" onchange="syncBBG('e')"><option value="">— 不選 —</option></select></div>
+          <div class="f"><label>BBG Code 5</label><select id="eb5" onchange="syncBBG('e')"><option value="">— 不選 —</option></select></div>
         </div>
 
-        <hr class="divider">
-
-        <!-- 收益條件 -->
-        <div class="cond-section">
-          <div class="cond-section-title">收益條件</div>
-          <div class="cond-item">
-            <div class="cond-label">Coupon P.A. (%) 暫定</div>
-            <div class="cond-value highlight" id="v-coupon">—</div>
-          </div>
+        <div class="stl" style="margin-top:4px">報價基準日期</div>
+        <div class="row c3">
+          <div class="f"><label>報價基準日</label><input type="date" id="ec-qd"></div>
+          <div class="f"><label>Issue Date</label><input type="date" id="ec-is"></div>
+          <div class="f"><label>Date Schedule Config</label><input type="number" id="ec-ds" value="7"></div>
         </div>
 
+        <div class="lock">
+          <div class="lock-t">🔐 請輸入管理員密碼才能儲存條件 <span class="lock-b">僅管理員</span></div>
+          <div class="row c2">
+            <div class="f"><input type="text" id="ec-eid" placeholder="操作者員編（6碼）" maxlength="6"></div>
+            <div class="f"><input type="password" id="ec-pw" placeholder="輸入管理員密碼"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)">
+          <button class="btn bw bsm" onclick="loadDefaults()">取消</button>
+          <button class="btn bg bsm" onclick="saveDefaults()">儲存條件</button>
+        </div>
+      </div>
       </div>
     </div>
 
-    <!-- 填寫詢價資訊 -->
-    <div class="section-card">
-      <div class="form-header">
-        <h2>📝 填寫詢價資訊</h2>
-        <p>請確認商品條件後，填寫基本資料送出詢價</p>
+    <!-- ② 詢價管理 -->
+    <div class="card">
+      <div class="chd">
+        <div><h2>📋 詢價管理</h2><p>填入上手報價、切換公布狀態、查看確認與跟單名單</p></div>
+        <div class="bgrp" style="padding-top:0">
+          <button class="btn ba bsm" onclick="exportXL()">📥 匯出 Excel</button>
+          <button class="btn br bsm" onclick="clearAll()">清除記錄</button>
+        </div>
       </div>
-      <div class="form-body">
-        <div id="adv-alert"></div>
-
-        <div class="form-section">
-          <div class="form-section-title">理專資訊</div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>理專姓名<span class="req">*</span></label>
-              <input type="text" id="i-name" placeholder="請輸入姓名">
-            </div>
-            <div class="form-field">
-              <label>員工編號<span class="req">*</span></label>
-              <input type="text" id="i-empid" placeholder="6碼員工編號" maxlength="6">
-            </div>
-            <div class="form-field">
-              <label>分行<span class="req">*</span></label>
-              <input type="text" id="i-branch" placeholder="請輸入分行名稱">
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-section-title">報價條件</div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Product</label>
-              <input type="text" id="i-product" value="FCN" readonly>
-            </div>
-            <div class="form-field">
-              <label>Currency</label>
-              <input type="text" id="i-currency" readonly>
-            </div>
-            <div class="form-field">
-              <label>Wrapper</label>
-              <input type="text" id="i-wrapper" readonly>
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Tenor (m)</label>
-              <input type="text" id="i-tenor" readonly>
-            </div>
-            <div class="form-field">
-              <label>Strike (%)</label>
-              <input type="number" id="i-strike" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>Barrier Type</label>
-              <select id="i-barrier">
-                <option>AKI</option><option>EKI</option><option>EKO</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>KI Barrier (%)</label>
-              <input type="number" id="i-ki" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>KO Type</label>
-              <select id="i-kotype">
-                <option>Daily Memory</option><option>Daily</option><option>None</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Guaranteed Periods</label>
-              <input type="number" id="i-gp" min="0">
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>KO Barrier (%)</label>
-              <input type="number" id="i-ko" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>Coupon p.a. (%)</label>
-              <input type="number" id="i-coupon" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>UF (%)</label>
-              <input type="number" id="i-uf" step="0.01" oninput="onUfChange()">
-              <div class="field-hint" id="reoffer-hint"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-section-title">標的 BBG Code</div>
-          <div class="form-row cols-3">
-            <div class="form-field"><label>BBG Code 1</label><input type="text" id="i-bbg1"></div>
-            <div class="form-field"><label>BBG Code 2</label><input type="text" id="i-bbg2" placeholder="選填"></div>
-            <div class="form-field"><label>BBG Code 3</label><input type="text" id="i-bbg3" placeholder="選填"></div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field"><label>BBG Code 4</label><input type="text" id="i-bbg4" placeholder="選填"></div>
-            <div class="form-field"><label>BBG Code 5</label><input type="text" id="i-bbg5" placeholder="選填"></div>
-            <div></div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <div class="form-section-title">其他資訊</div>
-          <div class="form-row cols-3">
-            <div class="form-field"><label>客戶名稱</label><input type="text" id="i-client" placeholder="選填"></div>
-            <div class="form-field"><label>詢價金額 (USD)</label><input type="number" id="i-amount" placeholder="e.g. 100000"></div>
-            <div class="form-field"><label>備註</label><input type="text" id="i-note" placeholder="選填"></div>
-          </div>
-        </div>
-
-        <div class="btn-group">
-          <button class="btn-primary" onclick="submitInquiry()">送出詢價</button>
-          <button class="btn-secondary" onclick="resetForm()">清除</button>
-        </div>
+      <div class="cbd" id="adm-list">
+        <div class="empty"><div class="ei">📭</div><p>尚無詢價記錄</p></div>
       </div>
     </div>
 
   </div>
 </div>
+</div>
 
-<!-- ═══════════════ ADMIN PAGE ═══════════════ -->
-<div class="page" id="pg-admin">
-  <div class="container">
-
-    <!-- LOGIN -->
-    <div id="admin-login" class="login-wrap">
-      <div class="section-card login-card">
-        <div class="login-header">
-          <div style="font-size:32px;margin-bottom:10px">🔒</div>
-          <h2>管理員登入</h2>
-          <p>財富管理部專用後台</p>
-        </div>
-        <div class="login-body">
-          <div id="login-alert"></div>
-          <div class="form-field" style="margin-bottom:12px">
-            <label>員工編號</label>
-            <input type="text" id="adm-empid" placeholder="請輸入 6 碼員工編號" maxlength="6">
-          </div>
-          <div class="form-field" style="margin-bottom:20px">
-            <label>管理員密碼</label>
-            <input type="password" id="adm-pw" placeholder="請輸入密碼"
-              onkeydown="if(event.key==='Enter')doLogin()">
-          </div>
-          <button class="btn-primary" onclick="doLogin()" style="width:100%;padding:11px;">登入</button>
-          <p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-top:14px">
-            預設密碼：admin2026
-          </p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div id="admin-panel" style="display:none">
-      <div class="admin-toprow">
-        <h1>管理員面板</h1>
-        <button class="logout-btn" onclick="doLogout()">登出</button>
-      </div>
-
-      <!-- Stats -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-num" id="stat-total">0</div>
-          <div class="stat-label">總詢價筆數</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-branch">0</div>
-          <div class="stat-label">參與分行數</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-today">0</div>
-          <div class="stat-label">今日詢價</div>
-        </div>
-      </div>
-
-      <!-- Edit condition -->
-      <div class="section-card" style="margin-bottom:20px">
-        <div class="form-header" style="border-bottom:1px solid var(--border)">
-          <h2>✏️ 編輯專案條件</h2>
-          <p>管理員專用・條件變更後所有理專即時看到更新</p>
-        </div>
-        <div class="form-body">
-          <div id="edit-alert"></div>
-
-          <div class="form-section-title" style="margin-bottom:14px">報價基本資訊</div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Product</label>
-              <input type="text" value="FCN" readonly>
-            </div>
-            <div class="form-field">
-              <label>Currency</label>
-              <select id="e-currency">
-                <option>USD</option><option>TWD</option><option>EUR</option><option>AUD</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Wrapper</label>
-              <select id="e-wrapper">
-                <option>EMTN</option><option>ELN</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Tenor (m)</label>
-              <select id="e-tenor">
-                <option>3</option><option>6</option><option>9</option>
-                <option>12</option><option>18</option><option>24</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Strike (%)</label>
-              <input type="number" id="e-strike" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>Barrier Type</label>
-              <select id="e-barrier">
-                <option>AKI</option><option>EKI</option><option>EKO</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>KI Barrier (%)</label>
-              <input type="number" id="e-ki" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>KO Type</label>
-              <select id="e-kotype">
-                <option>Daily Memory</option><option>Daily</option><option>None</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label>Guaranteed Periods</label>
-              <select id="e-gp">
-                <option>0</option><option>1</option><option>2</option><option>3</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>KO Barrier (%)</label>
-              <input type="number" id="e-ko" step="0.01">
-            </div>
-            <div></div><div></div>
-          </div>
-
-          <div class="form-section-title" style="margin-bottom:14px;margin-top:4px">標的（BBG CODE）</div>
-          <div class="form-row cols-3">
-            <div class="form-field"><label>BBG Code 1</label><input type="text" id="e-bbg1"></div>
-            <div class="form-field"><label>BBG Code 2</label><input type="text" id="e-bbg2" placeholder="不選 — 請留空"></div>
-            <div class="form-field"><label>BBG Code 3</label><input type="text" id="e-bbg3" placeholder="不選 — 請留空"></div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field"><label>BBG Code 4</label><input type="text" id="e-bbg4" placeholder="不選 — 請留空"></div>
-            <div class="form-field"><label>BBG Code 5</label><input type="text" id="e-bbg5" placeholder="不選 — 請留空"></div>
-            <div></div>
-          </div>
-
-          <div class="form-section-title" style="margin-bottom:14px;margin-top:4px">收益條件</div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Coupon p.a. (%)</label>
-              <input type="number" id="e-coupon" step="0.01">
-            </div>
-            <div class="form-field">
-              <label>UF (%)（動態）</label>
-              <input type="number" id="e-uf" step="0.01" oninput="onEditUfChange()">
-              <div class="field-hint" id="edit-reoffer-hint"></div>
-            </div>
-            <div class="form-field">
-              <label>Obs. Frequency (m)</label>
-              <input type="number" id="e-obs" value="1" min="1">
-            </div>
-          </div>
-          <div class="form-row cols-3">
-            <div class="form-field">
-              <label>Date Schedule Config</label>
-              <input type="number" id="e-dsc" value="7">
-            </div>
-            <div class="form-field">
-              <label>Issue Date</label>
-              <input type="date" id="e-issue">
-            </div>
-            <div></div>
-          </div>
-
-          <div class="form-section-title" style="margin-bottom:14px;margin-top:4px">報價基準日期</div>
-          <div class="form-row cols-2">
-            <div class="form-field">
-              <label>報價日期</label>
-              <input type="date" id="e-qdate">
-              <div class="field-hint" style="color:var(--text-secondary)">每次更新條件請同步更新此日期，理專將看到最新報價時間</div>
-            </div>
-            <div></div>
-          </div>
-
-          <!-- Lock area -->
-          <div class="lock-area">
-            <div class="lock-area-title">
-              🔐 請輸入管理員密碼才能儲存條件
-              <span class="lock-badge">僅管理員</span>
-            </div>
-            <div class="form-row cols-2">
-              <div class="form-field">
-                <input type="text" id="sv-empid" placeholder="操作者員編（6碼）" maxlength="6">
-              </div>
-              <div class="form-field">
-                <input type="password" id="sv-pw" placeholder="輸入管理員密碼">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-btn-row">
-            <button class="btn-secondary" onclick="loadToForm()">取消</button>
-            <button class="btn-primary" onclick="saveCondition()">儲存條件</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Records table -->
-      <div class="section-card">
-        <div class="table-header">
-          <h2>📊 詢價記錄</h2>
-          <div class="table-actions">
-            <button class="btn-amber" onclick="exportExcel()">📥 匯出 Excel</button>
-            <button class="btn-danger" onclick="clearRecords()">清除記錄</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>時間</th>
-                <th>分行</th>
-                <th>理專</th>
-                <th>員編</th>
-                <th>客戶</th>
-                <th>金額 (USD)</th>
-                <th>Product</th>
-                <th>Currency</th>
-                <th>Wrapper</th>
-                <th>Tenor</th>
-                <th>BBG1</th>
-                <th>BBG2</th>
-                <th>BBG3</th>
-                <th>BBG4</th>
-                <th>BBG5</th>
-                <th>Strike%</th>
-                <th>Barrier</th>
-                <th>KI%</th>
-                <th>KO Type</th>
-                <th>GP</th>
-                <th>KO%</th>
-                <th>Coupon%</th>
-                <th>Obs(m)</th>
-                <th>Reoffer%</th>
-                <th>DSC</th>
-                <th>Issue Date</th>
-                <th>Final Fixing</th>
-                <th>Redemption</th>
-                <th>備註</th>
-              </tr>
-            </thead>
-            <tbody id="rec-tbody">
-              <tr class="no-records">
-                <td colspan="30">尚無詢價記錄</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-    </div><!-- /admin-panel -->
+<!-- ══ 送出成功 ══ -->
+<div class="ov" id="m-ok">
+  <div class="modal" style="text-align:center">
+    <div class="m-icon">✅</div>
+    <div class="m-title">詢價已送出</div>
+    <div class="m-desc">記錄已儲存，管理員將彙整後向上手銀行詢價<br>請至「我的詢價紀錄」輸入員工編號查詢狀態</div>
+    <button class="btn bg" onclick="cm('m-ok')" style="width:100%;justify-content:center">確認</button>
   </div>
 </div>
 
-<!-- Edit Modal (from advisor page) -->
-<div class="modal-overlay" id="edit-modal">
-  <div class="modal-box" style="max-width:500px;text-align:left;">
-    <div style="font-size:16px;font-weight:700;margin-bottom:6px;">🔒 管理員驗證</div>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:20px;">
-      請切換至「管理員」頁籤並登入後，方可編輯 FCN 條件
-    </p>
-    <div style="text-align:right">
-      <button class="btn-secondary" onclick="closeEditModal()">關閉</button>
-      <button class="btn-primary" style="margin-left:8px" onclick="goAdmin()">前往管理員</button>
+<!-- ══ 確認報價 ══ -->
+<div class="ov" id="m-cfm">
+  <div class="modal">
+    <div class="m-title">✅ 確認接受報價</div>
+    <div class="m-desc">請填寫您確認接受的客戶資訊</div>
+    <input type="hidden" id="cfm-id">
+    <div class="row c2" style="margin-bottom:10px">
+      <div class="f"><label>客戶名稱<span class="req">*</span></label><input type="text" id="cfm-cl" placeholder="請輸入客戶名稱"></div>
+      <div class="f"><label>確認金額 (USD)<span class="req">*</span></label><input type="number" id="cfm-am" placeholder="e.g. 100000"></div>
+    </div>
+    <div class="f" style="margin-bottom:12px"><label>備註</label><input type="text" id="cfm-nt" placeholder="選填"></div>
+    <div id="cfm-al"></div>
+    <div class="m-foot">
+      <button class="btn bw bsm" onclick="cm('m-cfm')">取消</button>
+      <button class="btn bg bsm" onclick="submitCfm()">確認送出</button>
     </div>
   </div>
 </div>
 
-<!-- Success Modal -->
-<div class="modal-overlay" id="ok-modal">
-  <div class="modal-box">
-    <div class="modal-icon">✅</div>
-    <div class="modal-title">詢價已送出</div>
-    <div class="modal-desc">您的詢價已記錄完成<br>管理員可於後台查看並匯出 Excel</div>
-    <button class="btn-primary" onclick="closeOkModal()" style="width:100%">確認</button>
+<!-- ══ 跟單意願 ══ -->
+<div class="ov" id="m-flw">
+  <div class="modal">
+    <div class="m-title">🙋 申請跟單意願</div>
+    <div class="m-desc">請填寫跟單資訊，管理員將收到通知</div>
+    <input type="hidden" id="flw-id">
+    <div class="row c3" style="margin-bottom:10px">
+      <div class="f"><label>理專姓名<span class="req">*</span></label><input type="text" id="flw-nm" placeholder="姓名"></div>
+      <div class="f"><label>員工編號<span class="req">*</span></label><input type="text" id="flw-ei" placeholder="6碼" maxlength="6"></div>
+      <div class="f"><label>分行<span class="req">*</span></label><input type="text" id="flw-br" placeholder="分行名稱"></div>
+    </div>
+    <div class="row c2" style="margin-bottom:10px">
+      <div class="f"><label>客戶名稱<span class="req">*</span></label><input type="text" id="flw-cl" placeholder="請輸入客戶名稱"></div>
+      <div class="f"><label>跟單金額 (USD)<span class="req">*</span></label><input type="number" id="flw-am" placeholder="e.g. 100000"></div>
+    </div>
+    <div class="f" style="margin-bottom:12px"><label>備註</label><input type="text" id="flw-nt" placeholder="選填"></div>
+    <div id="flw-al"></div>
+    <div class="m-foot">
+      <button class="btn bw bsm" onclick="cm('m-flw')">取消</button>
+      <button class="btn bg bsm" onclick="submitFlw()">送出跟單意願</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 填入上手報價 ══ -->
+<div class="ov" id="m-qt">
+  <div class="modal">
+    <div class="m-title">💰 填入上手報價</div>
+    <div class="m-desc">填入上手銀行回傳的完整報價條件，儲存後可選擇公布給理專</div>
+    <input type="hidden" id="qt-id">
+    <div class="row c2" style="margin-bottom:10px">
+      <div class="f">
+        <label>Coupon p.a. (%)</label>
+        <input type="number" id="qt-cp" step="0.01" placeholder="e.g. 15.5">
+      </div>
+      <div class="f">
+        <label>UF (%)</label>
+        <input type="number" id="qt-uf" step="0.01" placeholder="e.g. 2" oninput="qtReoffer()">
+        <div class="hint" id="qt-rh"></div>
+      </div>
+    </div>
+    <div class="lock">
+      <div class="lock-t">🔐 請輸入管理員密碼確認 <span class="lock-b">僅管理員</span></div>
+      <div class="row c2">
+        <div class="f"><input type="text" id="qt-ei" placeholder="員工編號 (6碼)" maxlength="6"></div>
+        <div class="f"><input type="password" id="qt-pw" placeholder="管理員密碼"></div>
+      </div>
+    </div>
+    <div id="qt-al" style="margin-top:8px"></div>
+    <div class="m-foot">
+      <button class="btn bw bsm" onclick="cm('m-qt')">取消</button>
+      <button class="btn bg bsm" onclick="submitQt()">儲存報價</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 查看名單 ══ -->
+<div class="ov" id="m-ls">
+  <div class="modal wide">
+    <div class="m-title" id="ls-title">名單</div>
+    <div id="ls-body" style="margin-bottom:14px;max-height:55vh;overflow-y:auto"></div>
+    <div style="text-align:right"><button class="btn bw bsm" onclick="cm('m-ls')">關閉</button></div>
   </div>
 </div>
 
 <script>
-const ADMIN_PW = 'admin2026';
-const SK_COND = 'fcn2_cond';
-const SK_INQS = 'fcn2_inqs';
+// ════════════════════════════════════
+// CONSTANTS & DATA
+// ════════════════════════════════════
+const PW = 'admin2026';
+const SK = 'fcn_v4';
+const BBG = ['NVDA UW','GOOGL UW','TSLA UW','TSM UN','META UW','MSFT UW','AMZN UW','AAPL UW'];
 
-const DEFAULT_COND = {
-  currency:'USD', wrapper:'EMTN', tenor:'6',
-  strike:'80', barrier:'AKI', ki:'70',
-  kotype:'Daily Memory', gp:'2', ko:'100',
-  coupon:'20.03', uf:'2', obs:'1', dsc:'7',
-  issue:'2026-05-19', qdate: new Date().toISOString().slice(0,10),
-  bbg1:'NVDA UW', bbg2:'GOOGL UW', bbg3:'TSM UN', bbg4:'', bbg5:''
+const DEF_COND = {
+  cy:'USD', tn:'6', bt:'AKI', sk:'80', ki:'70', gp:'2', ko:'100',
+  b1:'NVDA UW', b2:'GOOGL UW', b3:'TSM UN', b4:'', b5:'',
+  qd: new Date().toISOString().slice(0,10), is:'', ds:'7'
 };
 
-let COND = JSON.parse(localStorage.getItem(SK_COND)) || DEFAULT_COND;
-let INQS = JSON.parse(localStorage.getItem(SK_INQS)) || [];
-let adminLoggedIn = false;
+function ld() { return JSON.parse(localStorage.getItem(SK)) || {cond:{...DEF_COND}, inqs:[]}; }
+function sd(d) { localStorage.setItem(SK, JSON.stringify(d)); }
+function gv(id) { const e = document.getElementById(id); return e ? e.value.trim() : ''; }
+function cm(id) { document.getElementById(id).classList.remove('show'); }
+function sm(id) { document.getElementById(id).classList.add('show'); }
+function sal(id, tp, msg) { document.getElementById(id).innerHTML = `<div class="al al-${tp}">${msg}</div>`; }
+function cal(id) { document.getElementById(id).innerHTML = ''; }
 
-/* ─── UTILS ─── */
-function fmtDateStr(isoStr, tenorM) {
-  // Given issue date + tenor months, compute Final Fixing & Redemption
-  try {
-    const iss = new Date(isoStr);
-    const fix = new Date(iss);
-    fix.setMonth(fix.getMonth() + parseInt(tenorM));
-    const red = new Date(fix);
-    red.setDate(red.getDate() + 4);
-    const fmt = d => {
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
-    };
-    return { issue: fmt(iss), fixing: fmt(fix), redeem: fmt(red) };
-  } catch { return { issue:'—', fixing:'—', redeem:'—' }; }
+// ════════════════════════════════════
+// PAGE SWITCH
+// ════════════════════════════════════
+function sw(p) {
+  document.querySelectorAll('.pg').forEach(e => e.classList.remove('on'));
+  document.getElementById('pg-' + p).classList.add('on');
+  document.querySelectorAll('.nb').forEach((b,i) => b.classList.toggle('on', (i===0&&p==='adv')||(i===1&&p==='adm')));
+  if (p === 'adv') { renderBoard(); }
+  if (p === 'adm' && document.getElementById('adm-panel').style.display !== 'none') { renderAdmList(); renderStats(); }
 }
 
-function gv(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
-function sv(id, val) { const el = document.getElementById(id); if(el) el.value = val || ''; }
-
-/* ─── PAGE SWITCH ─── */
-function switchPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.getElementById('pg-' + p).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach((t, i) => {
-    t.classList.toggle('active', (i===0&&p==='advisor')||(i===1&&p==='admin'));
+// ════════════════════════════════════
+// BBG SYNC (prefix: 'f'=form, 'e'=edit)
+// ════════════════════════════════════
+function syncBBG(px) {
+  const ids = [1,2,3,4,5].map(i => `${px}b${i}`);
+  const sel = ids.map(id => document.getElementById(id).value).filter(v => v && v !== '');
+  ids.forEach((id, i) => {
+    const el = document.getElementById(id);
+    const cur = el.value;
+    const avail = BBG.filter(b => !sel.includes(b) || b === cur);
+    el.innerHTML = (i === 0 ? '<option value="">請選擇</option>' : '<option value="">— 不選 —</option>') +
+      avail.map(b => `<option${b===cur?' selected':''}>${b}</option>`).join('');
   });
 }
 
-/* ─── RENDER ADVISOR CONDITION ─── */
-function renderCondition() {
-  const c = COND;
-  document.getElementById('v-qdate').textContent = c.qdate;
-  document.getElementById('v-currency').textContent = c.currency;
-  document.getElementById('v-wrapper').textContent = c.wrapper;
-  document.getElementById('v-tenor').textContent = c.tenor;
-  document.getElementById('v-strike').textContent = c.strike;
-  document.getElementById('v-barrier').textContent = c.barrier;
-  document.getElementById('v-ki').textContent = c.ki;
-  document.getElementById('v-kotype').textContent = c.kotype;
-  document.getElementById('v-gp').textContent = c.gp;
-  document.getElementById('v-ko').textContent = c.ko;
-  document.getElementById('v-uf').textContent = c.uf + '%';
-  document.getElementById('v-coupon').textContent = c.coupon + '%';
-  // BBG tags
-  const bbgEl = document.getElementById('v-bbg');
-  const codes = [c.bbg1, c.bbg2, c.bbg3, c.bbg4, c.bbg5].filter(Boolean);
-  bbgEl.innerHTML = codes.map(b => `<span class="bbg-tag">${b}</span>`).join('');
-  // Prefill form
-  sv('i-currency', c.currency); sv('i-wrapper', c.wrapper);
-  sv('i-tenor', c.tenor); sv('i-strike', c.strike);
-  document.getElementById('i-barrier').value = c.barrier;
-  sv('i-ki', c.ki);
-  document.getElementById('i-kotype').value = c.kotype;
-  sv('i-gp', c.gp); sv('i-ko', c.ko);
-  sv('i-coupon', c.coupon); sv('i-uf', c.uf);
-  sv('i-bbg1', c.bbg1); sv('i-bbg2', c.bbg2);
-  sv('i-bbg3', c.bbg3); sv('i-bbg4', c.bbg4); sv('i-bbg5', c.bbg5);
-  onUfChange();
+function initBBG() {
+  syncBBG('f');
+  syncBBG('e');
 }
 
-/* ─── UF → Reoffer ─── */
-function onUfChange() {
-  const v = parseFloat(gv('i-uf'));
-  document.getElementById('reoffer-hint').textContent =
-    isNaN(v) ? '' : `Reoffer (%) = 100 − ${v} = ${(100 - v).toFixed(2)}%`;
-}
-function onEditUfChange() {
-  const v = parseFloat(document.getElementById('e-uf').value);
-  document.getElementById('edit-reoffer-hint').textContent =
-    isNaN(v) ? '' : `Reoffer (%) = 100 − ${v} = ${(100 - v).toFixed(2)}%`;
-}
-
-/* ─── SUBMIT INQUIRY ─── */
-function submitInquiry() {
-  const name = gv('i-name'), empid = gv('i-empid'), branch = gv('i-branch');
-  const al = document.getElementById('adv-alert');
-  if (!name || !empid || !branch) {
-    al.innerHTML = '<div class="alert alert-error">⚠️ 請填寫理專姓名、員工編號及分行</div>';
-    return;
+// ════════════════════════════════════
+// MUTEX UF / COUPON
+// ════════════════════════════════════
+function onMx(src) {
+  const uf = document.getElementById('fuf');
+  const cp = document.getElementById('fcp');
+  const hint = document.getElementById('uf-hint');
+  if (src === 'uf') {
+    if (uf.value !== '') {
+      cp.value = ''; cp.disabled = true; cp.placeholder = '⛔ UF 已填，此欄鎖定';
+      const v = parseFloat(uf.value);
+      hint.textContent = isNaN(v) ? '' : `Reoffer = 100 − ${v} = ${(100-v).toFixed(2)}%`;
+    } else {
+      cp.disabled = false; cp.placeholder = '請輸入 Coupon'; hint.textContent = '';
+    }
+  } else {
+    if (cp.value !== '') {
+      uf.value = ''; uf.disabled = true; uf.placeholder = '⛔ Coupon 已填，此欄鎖定'; hint.textContent = '';
+    } else {
+      uf.disabled = false; uf.placeholder = '請輸入 UF';
+    }
   }
-  al.innerHTML = '';
-  const uf = parseFloat(gv('i-uf')) || 0;
-  const dt = fmtDateStr(COND.issue, gv('i-tenor'));
-  const rec = {
-    id: Date.now(),
+}
+
+function qtReoffer() {
+  const v = parseFloat(gv('qt-uf'));
+  document.getElementById('qt-rh').textContent = isNaN(v) ? '' : `Reoffer = 100 − ${v} = ${(100-v).toFixed(2)}%`;
+}
+
+// ════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════
+function badge(s) {
+  const m = { pending:['bp','⏳ 詢價中'], quoted:['bq','💰 已報價'], published:['bpub','📢 已公布'] };
+  const [c, t] = m[s] || ['bp','未知'];
+  return `<span class="badge ${c}"><span class="dot"></span>${t}</span>`;
+}
+function tags(r) {
+  return [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).map(b=>`<span class="tag">${b}</span>`).join('');
+}
+function fmt(v) { return v ? '$' + Number(v).toLocaleString() : '—'; }
+
+// ════════════════════════════════════
+// SUBMIT INQUIRY
+// ════════════════════════════════════
+function submitInq() {
+  cal('adv-al');
+  const nm=gv('fn'), ei=gv('fe'), br=gv('fb');
+  const cy=gv('fcy'), tn=gv('ftn'), bt=gv('fbt');
+  const sk=gv('fsk'), ki=gv('fki'), gp=gv('fgp'), ko=gv('fko');
+  const b1=gv('fb1'), uf=gv('fuf'), cp=gv('fcp');
+  if (!nm||!ei||!br) { sal('adv-al','err','⚠️ 請填寫姓名、員工編號及分行'); return; }
+  if (!cy||!tn||!bt||!sk||!ki||!gp||!ko) { sal('adv-al','err','⚠️ 請完整填寫所有報價條件'); return; }
+  if (!b1) { sal('adv-al','err','⚠️ 請至少選擇一個標的 BBG Code'); return; }
+  if (!uf && !cp) { sal('adv-al','err','⚠️ 請填寫 UF 或 Coupon p.a. 其中一項'); return; }
+  const d = ld();
+  d.inqs.push({
+    id: 'INQ' + Date.now(),
     time: new Date().toLocaleString('zh-TW'),
-    name, empid, branch,
-    client: gv('i-client'),
-    amount: gv('i-amount'),
-    note: gv('i-note'),
-    product: 'FCN',
-    currency: gv('i-currency'),
-    wrapper: gv('i-wrapper'),
-    tenor: gv('i-tenor'),
-    bbg1: gv('i-bbg1'), bbg2: gv('i-bbg2'),
-    bbg3: gv('i-bbg3'), bbg4: gv('i-bbg4'), bbg5: gv('i-bbg5'),
-    strike: gv('i-strike'),
-    barrier: gv('i-barrier') || document.getElementById('i-barrier').value,
-    ki: gv('i-ki'),
-    kotype: document.getElementById('i-kotype').value,
-    gp: gv('i-gp'),
-    ko: gv('i-ko'),
-    coupon: gv('i-coupon'),
-    uf,
-    reoffer: (100 - uf).toFixed(2),
-    obs: COND.obs,
-    dsc: COND.dsc,
-    issueDate: dt.issue,
-    fixingDate: dt.fixing,
-    redeemDate: dt.redeem,
-    qdate: COND.qdate
-  };
-  INQS.push(rec);
-  localStorage.setItem(SK_INQS, JSON.stringify(INQS));
-  document.getElementById('ok-modal').classList.add('show');
+    nm, ei, br, cl: gv('fcl'), am: gv('fam'), nt: gv('fnt'),
+    cy, wr:'EMTN', tn, bt, sk, ki, gp, ko,
+    b1, b2:gv('fb2'), b3:gv('fb3'), b4:gv('fb4'), b5:gv('fb5'),
+    uf_in: uf, cp_in: cp,
+    qt_cp:'', qt_uf:'', qt_ro:'',
+    status:'pending', cfms:[], flws:[]
+  });
+  sd(d);
+  sm('m-ok');
   resetForm();
-  renderTable();
-  renderStats();
+  renderBoard();
 }
 
 function resetForm() {
-  ['i-name','i-empid','i-branch','i-client','i-amount','i-note'].forEach(id => sv(id, ''));
-  document.getElementById('adv-alert').innerHTML = '';
-  renderCondition();
+  ['fn','fe','fb','fcl','fam','fnt','fsk','fki','fko','fuf','fcp'].forEach(id=>{
+    const e=document.getElementById(id); if(e){e.value='';e.disabled=false;}
+  });
+  ['fcy','ftn','fbt','fgp','fb1','fb2','fb3','fb4','fb5'].forEach(id=>{
+    const e=document.getElementById(id); if(e) e.value='';
+  });
+  document.getElementById('fuf').placeholder = '請輸入 UF';
+  document.getElementById('fcp').placeholder = '請輸入 Coupon';
+  document.getElementById('uf-hint').textContent = '';
+  cal('adv-al');
+  syncBBG('f');
 }
 
-/* ─── MODALS ─── */
-function openEditPanel() { document.getElementById('edit-modal').classList.add('show'); }
-function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
-function goAdmin() { closeEditModal(); switchPage('admin'); }
-function closeOkModal() { document.getElementById('ok-modal').classList.remove('show'); }
+// ════════════════════════════════════
+// LOOKUP MY INQUIRIES
+// ════════════════════════════════════
+function lookupMine() {
+  const ei = gv('lu-empid');
+  const el = document.getElementById('my-list');
+  if (!ei) { el.innerHTML = '<div class="empty"><div class="ei">🔍</div><p>請輸入員工編號</p></div>'; return; }
+  const d = ld();
+  const mine = d.inqs.filter(r => r.ei === ei);
+  if (!mine.length) { el.innerHTML = '<div class="empty"><div class="ei">📭</div><p>查無詢價記錄</p></div>'; return; }
+  el.innerHTML = mine.map(r => {
+    const canCfm = r.status === 'published' && r.qt_cp;
+    return `<div class="iq">
+      <div class="iq-top">
+        <div class="iq-info">
+          <div class="iq-id">${r.id}</div>
+          <div class="iq-sub">${r.time} ・ ${r.cy} / ${r.tn}m</div>
+          <div class="iq-tags">${tags(r)}</div>
+        </div>
+        <div>${badge(r.status)}</div>
+      </div>
+      <div class="iq-meta">
+        <div class="im"><div class="ml">您填寫</div><div class="mv">${r.uf_in ? 'UF: '+r.uf_in+'%' : 'Coupon: '+r.cp_in+'%'}</div></div>
+        <div class="im"><div class="ml">Strike</div><div class="mv">${r.sk}% / ${r.bt}</div></div>
+        <div class="im"><div class="ml">KI</div><div class="mv">${r.ki}%</div></div>
+        ${r.qt_cp ? `<div class="im"><div class="ml">報價 Coupon</div><div class="mv hi">${r.qt_cp}%</div></div>` : ''}
+        ${r.qt_ro ? `<div class="im"><div class="ml">Reoffer</div><div class="mv bl">${r.qt_ro}%</div></div>` : ''}
+        <div class="im"><div class="ml">我的確認</div><div class="mv">${r.cfms.filter(c=>c.ei===ei).length} 筆</div></div>
+      </div>
+      ${canCfm ? `<div class="iq-acts"><button class="btn bg bsm" onclick="openCfm('${r.id}')">✅ 確認接受此報價</button></div>` : ''}
+      ${r.status==='pending'?`<div style="margin-top:6px;font-size:11px;color:var(--t3)">⏳ 等待管理員填入上手報價</div>`:''}
+    </div>`;
+  }).join('');
+}
 
-/* ─── ADMIN LOGIN ─── */
+// ════════════════════════════════════
+// PUBLIC BOARD
+// ════════════════════════════════════
+function renderBoard() {
+  const d = ld();
+  const pub = d.inqs.filter(r => r.status === 'published');
+  const el = document.getElementById('pub-board');
+  if (!pub.length) { el.innerHTML = '<div class="empty"><div class="ei">📭</div><p>目前尚無公布報價</p></div>'; return; }
+  el.innerHTML = pub.map(r => `
+    <div class="qc">
+      <div class="qc-hd">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;font-weight:700">${r.id}</span>
+          ${badge(r.status)}
+        </div>
+        <span style="font-size:11px;color:var(--t3)">${r.time}</span>
+      </div>
+      <div class="qc-bd">
+        <div class="qc-grid">
+          <div class="qi"><div class="ql">Coupon p.a.</div><div class="qv hi">${r.qt_cp ? r.qt_cp+'%' : '—'}</div></div>
+          <div class="qi"><div class="ql">Reoffer (%)</div><div class="qv bl">${r.qt_ro ? r.qt_ro+'%' : '—'}</div></div>
+          <div class="qi"><div class="ql">Currency / Tenor</div><div class="qv">${r.cy} / ${r.tn}m</div></div>
+          <div class="qi"><div class="ql">KI Barrier</div><div class="qv">${r.ki}% (${r.bt})</div></div>
+        </div>
+        <div class="qc-tags">${tags(r)}</div>
+        <div class="qc-meta">
+          Strike: ${r.sk}% ・ KO Barrier: ${r.ko}% ・ Guaranteed Periods: ${r.gp} ・ KO Type: Daily Memory
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:6px">
+          跟單意願: <strong style="color:var(--t)">${r.flws.length}</strong> 筆 ／ 原詢價確認: <strong style="color:var(--t)">${r.cfms.length}</strong> 筆
+        </div>
+        <div class="qc-foot">
+          <button class="btn bg bsm" onclick="openFlw('${r.id}')">🙋 我有跟單意願</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════
+// CONFIRM (原詢價理專確認)
+// ════════════════════════════════════
+function openCfm(id) {
+  document.getElementById('cfm-id').value = id;
+  ['cfm-cl','cfm-am','cfm-nt'].forEach(i=>document.getElementById(i).value='');
+  cal('cfm-al');
+  sm('m-cfm');
+}
+function submitCfm() {
+  const cl=gv('cfm-cl'), am=gv('cfm-am');
+  if (!cl||!am) { sal('cfm-al','err','⚠️ 請填寫客戶名稱及金額'); return; }
+  const d=ld(), id=gv('cfm-id'), ei=gv('lu-empid');
+  const inq=d.inqs.find(r=>r.id===id);
+  if (!inq) { sal('cfm-al','err','找不到此詢價'); return; }
+  inq.cfms.push({ ei, cl, am, nt:gv('cfm-nt'), time:new Date().toLocaleString('zh-TW') });
+  sd(d); cm('m-cfm'); lookupMine(); renderBoard();
+  if (document.getElementById('adm-panel').style.display!=='none') { renderAdmList(); renderStats(); }
+}
+
+// ════════════════════════════════════
+// FOLLOW (跟單意願)
+// ════════════════════════════════════
+function openFlw(id) {
+  document.getElementById('flw-id').value = id;
+  ['flw-nm','flw-ei','flw-br','flw-cl','flw-am','flw-nt'].forEach(i=>document.getElementById(i).value='');
+  cal('flw-al');
+  sm('m-flw');
+}
+function submitFlw() {
+  const nm=gv('flw-nm'),ei=gv('flw-ei'),br=gv('flw-br'),cl=gv('flw-cl'),am=gv('flw-am');
+  if (!nm||!ei||!br||!cl||!am) { sal('flw-al','err','⚠️ 請填寫所有必填欄位'); return; }
+  const d=ld(), id=gv('flw-id');
+  const inq=d.inqs.find(r=>r.id===id);
+  if (!inq) { sal('flw-al','err','找不到此詢價'); return; }
+  inq.flws.push({ nm, ei, br, cl, am, nt:gv('flw-nt'), time:new Date().toLocaleString('zh-TW') });
+  sd(d); cm('m-flw'); renderBoard();
+  if (document.getElementById('adm-panel').style.display!=='none') { renderAdmList(); renderStats(); }
+}
+
+// ════════════════════════════════════
+// ADMIN LOGIN
+// ════════════════════════════════════
 function doLogin() {
-  const pw = document.getElementById('adm-pw').value;
-  const al = document.getElementById('login-alert');
-  if (pw === ADMIN_PW) {
-    adminLoggedIn = true;
-    document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'block';
-    loadToForm();
-    renderTable();
-    renderStats();
+  if (document.getElementById('adm-pw').value === PW) {
+    document.getElementById('adm-login').style.display = 'none';
+    document.getElementById('adm-panel').style.display = 'block';
+    loadDefaults(); renderAdmList(); renderStats();
   } else {
-    al.innerHTML = '<div class="alert alert-error">❌ 密碼錯誤，請重試</div>';
+    sal('login-al','err','❌ 密碼錯誤，請重試');
   }
 }
 function doLogout() {
-  adminLoggedIn = false;
-  document.getElementById('admin-login').style.display = 'block';
-  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('adm-login').style.display = 'block';
+  document.getElementById('adm-panel').style.display = 'none';
   document.getElementById('adm-pw').value = '';
-  document.getElementById('login-alert').innerHTML = '';
+  cal('login-al');
 }
 
-/* ─── LOAD CONDITION TO EDIT FORM ─── */
-function loadToForm() {
-  const c = COND;
-  const map = {
-    currency:'e-currency', wrapper:'e-wrapper', tenor:'e-tenor',
-    strike:'e-strike', barrier:'e-barrier', ki:'e-ki',
-    kotype:'e-kotype', gp:'e-gp', ko:'e-ko',
-    coupon:'e-coupon', uf:'e-uf', obs:'e-obs',
-    dsc:'e-dsc', issue:'e-issue', qdate:'e-qdate',
-    bbg1:'e-bbg1', bbg2:'e-bbg2', bbg3:'e-bbg3', bbg4:'e-bbg4', bbg5:'e-bbg5'
+// ════════════════════════════════════
+// ADMIN: EDIT FCN DEFAULTS
+// ════════════════════════════════════
+function toggleEdit() {
+  const p = document.getElementById('edit-panel');
+  const a = document.getElementById('edit-arrow');
+  const open = p.style.display === 'none';
+  p.style.display = open ? 'block' : 'none';
+  a.style.transform = open ? 'rotate(90deg)' : '';
+}
+
+function loadDefaults() {
+  const d = ld();
+  const c = d.cond || DEF_COND;
+  const setVal = (id, v) => { const e=document.getElementById(id); if(e) e.value=v||''; };
+  setVal('ec-cy', c.cy); setVal('ec-tn', c.tn); setVal('ec-bt', c.bt);
+  setVal('ec-sk', c.sk); setVal('ec-ki', c.ki); setVal('ec-gp', c.gp); setVal('ec-ko', c.ko);
+  setVal('eb1', c.b1); setVal('eb2', c.b2); setVal('eb3', c.b3); setVal('eb4', c.b4); setVal('eb5', c.b5);
+  setVal('ec-qd', c.qd); setVal('ec-is', c.is); setVal('ec-ds', c.ds);
+  setVal('ec-eid',''); setVal('ec-pw','');
+  syncBBG('e');
+  cal('edit-al');
+}
+
+function saveDefaults() {
+  const pw = document.getElementById('ec-pw').value;
+  const ei = gv('ec-eid');
+  if (pw !== PW || !ei) { sal('edit-al','err','❌ 請輸入員工編號與正確管理員密碼'); return; }
+  const d = ld();
+  d.cond = {
+    cy:gv('ec-cy'), tn:gv('ec-tn'), bt:gv('ec-bt'),
+    sk:gv('ec-sk'), ki:gv('ec-ki'), gp:gv('ec-gp'), ko:gv('ec-ko'),
+    b1:gv('eb1'), b2:gv('eb2'), b3:gv('eb3'), b4:gv('eb4'), b5:gv('eb5'),
+    qd:gv('ec-qd'), is:gv('ec-is'), ds:gv('ec-ds')
   };
-  for (const [k, id] of Object.entries(map)) {
-    const el = document.getElementById(id);
-    if (!el) continue;
-    if (el.tagName === 'SELECT') el.value = c[k] || '';
-    else el.value = c[k] || '';
-  }
-  sv('sv-empid', ''); sv('sv-pw', '');
-  onEditUfChange();
+  sd(d);
+  sal('edit-al','ok','✅ 預設條件已儲存！理專填寫詢價時將套用此設定');
+  setTimeout(()=>cal('edit-al'), 3000);
+  // also pre-fill advisor form with new defaults
+  applyDefaults(d.cond);
 }
 
-/* ─── SAVE CONDITION ─── */
-function saveCondition() {
-  const pw = document.getElementById('sv-pw').value;
-  const empid = gv('sv-empid');
-  const al = document.getElementById('edit-alert');
-  if (pw !== ADMIN_PW || !empid) {
-    al.innerHTML = '<div class="alert alert-error">❌ 請輸入員工編號與正確管理員密碼</div>';
-    return;
-  }
-  const keys = ['currency','wrapper','tenor','strike','barrier','ki','kotype','gp','ko',
-    'coupon','uf','obs','dsc','issue','qdate','bbg1','bbg2','bbg3','bbg4','bbg5'];
-  const newC = {};
-  keys.forEach(k => {
-    const el = document.getElementById('e-' + k);
-    newC[k] = el ? el.value : '';
-  });
-  COND = newC;
-  localStorage.setItem(SK_COND, JSON.stringify(COND));
-  renderCondition();
-  al.innerHTML = '<div class="alert alert-success">✅ 條件已儲存！理專介面即時更新完成</div>';
-  setTimeout(() => al.innerHTML = '', 3000);
+function applyDefaults(c) {
+  if (!c) return;
+  const setV = (id, v) => { const e=document.getElementById(id); if(e&&!e.disabled) e.value=v||''; };
+  setV('fcy', c.cy); setV('ftn', c.tn); setV('fbt', c.bt);
+  setV('fsk', c.sk); setV('fki', c.ki); setV('fgp', c.gp); setV('fko', c.ko);
+  setV('fb1', c.b1); setV('fb2', c.b2); setV('fb3', c.b3); setV('fb4', c.b4); setV('fb5', c.b5);
+  syncBBG('f');
 }
 
-/* ─── RENDER TABLE ─── */
-function renderTable() {
-  const tbody = document.getElementById('rec-tbody');
-  if (!INQS.length) {
-    tbody.innerHTML = '<tr class="no-records"><td colspan="30">尚無詢價記錄</td></tr>';
-    return;
-  }
-  tbody.innerHTML = INQS.map((r, i) => `
-    <tr>
-      <td>${i + 1}</td>
-      <td>${r.time}</td>
-      <td>${r.branch}</td>
-      <td>${r.name}</td>
-      <td>${r.empid}</td>
-      <td>${r.client || '—'}</td>
-      <td>${r.amount ? Number(r.amount).toLocaleString() : '—'}</td>
-      <td>${r.product}</td>
-      <td>${r.currency}</td>
-      <td>${r.wrapper}</td>
-      <td>${r.tenor}m</td>
-      <td>${r.bbg1 || '—'}</td>
-      <td>${r.bbg2 || '—'}</td>
-      <td>${r.bbg3 || '—'}</td>
-      <td>${r.bbg4 || '—'}</td>
-      <td>${r.bbg5 || '—'}</td>
-      <td>${r.strike}</td>
-      <td>${r.barrier}</td>
-      <td>${r.ki}</td>
-      <td>${r.kotype}</td>
-      <td>${r.gp}</td>
-      <td>${r.ko}</td>
-      <td class="td-coupon">${r.coupon}%</td>
-      <td>${r.obs}</td>
-      <td class="td-reoffer">${r.reoffer}%</td>
-      <td>${r.dsc}</td>
-      <td>${r.issueDate}</td>
-      <td>${r.fixingDate}</td>
-      <td>${r.redeemDate}</td>
-      <td>${r.note || '—'}</td>
-    </tr>`).join('');
+// ════════════════════════════════════
+// ADMIN: QUOTE MODAL
+// ════════════════════════════════════
+function openQt(id) {
+  document.getElementById('qt-id').value = id;
+  const d=ld(), inq=d.inqs.find(r=>r.id===id);
+  document.getElementById('qt-cp').value = inq.qt_cp||'';
+  document.getElementById('qt-uf').value = inq.qt_uf||'';
+  document.getElementById('qt-ei').value = '';
+  document.getElementById('qt-pw').value = '';
+  cal('qt-al'); qtReoffer(); sm('m-qt');
+}
+function submitQt() {
+  const pw=document.getElementById('qt-pw').value, ei=gv('qt-ei');
+  if (pw!==PW||!ei) { sal('qt-al','err','❌ 請輸入員工編號與正確密碼'); return; }
+  const cp=gv('qt-cp'), uf=gv('qt-uf');
+  if (!cp&&!uf) { sal('qt-al','err','⚠️ 請至少填寫 Coupon 或 UF'); return; }
+  const d=ld(), id=gv('qt-id');
+  const inq=d.inqs.find(r=>r.id===id);
+  inq.qt_cp=cp; inq.qt_uf=uf;
+  inq.qt_ro = uf ? (100-parseFloat(uf)).toFixed(2) : '';
+  if (inq.status==='pending') inq.status='quoted';
+  sd(d); cm('m-qt'); renderAdmList(); renderStats();
 }
 
-/* ─── STATS ─── */
+// ════════════════════════════════════
+// ADMIN: PUBLISH TOGGLE
+// ════════════════════════════════════
+function togglePub(id) {
+  const d=ld(), inq=d.inqs.find(r=>r.id===id);
+  if (inq.status==='published') {
+    if (!confirm('確定取消公布此報價？')) return;
+    inq.status='quoted';
+  } else {
+    inq.status='published';
+  }
+  sd(d); renderAdmList(); renderStats(); renderBoard();
+}
+
+// ════════════════════════════════════
+// ADMIN: RENDER LIST
+// ════════════════════════════════════
+function renderAdmList() {
+  const d=ld(), el=document.getElementById('adm-list');
+  if (!d.inqs.length) { el.innerHTML='<div class="empty"><div class="ei">📭</div><p>尚無詢價記錄</p></div>'; return; }
+  el.innerHTML = d.inqs.slice().reverse().map(r => `
+    <div class="iq">
+      <div class="iq-top">
+        <div class="iq-info">
+          <div class="iq-id">${r.id} <span style="font-weight:400;color:var(--t3);font-size:11px">・ ${r.time}</span></div>
+          <div class="iq-sub">${r.br} ・ ${r.nm}（${r.ei}）</div>
+          <div class="iq-tags">${tags(r)}</div>
+        </div>
+        ${badge(r.status)}
+      </div>
+      <div class="iq-meta">
+        <div class="im"><div class="ml">Currency/Tenor</div><div class="mv">${r.cy} / ${r.tn}m</div></div>
+        <div class="im"><div class="ml">Barrier/Strike/KI</div><div class="mv">${r.bt} / ${r.sk}% / ${r.ki}%</div></div>
+        <div class="im"><div class="ml">理專填寫</div><div class="mv">${r.uf_in ? 'UF: '+r.uf_in+'%' : 'Coupon: '+r.cp_in+'%'}</div></div>
+        ${r.qt_cp ? `<div class="im"><div class="ml">報價 Coupon</div><div class="mv hi">${r.qt_cp}%</div></div>` : ''}
+        ${r.qt_ro ? `<div class="im"><div class="ml">Reoffer</div><div class="mv bl">${r.qt_ro}%</div></div>` : ''}
+      </div>
+      <div class="iq-acts">
+        ${r.status==='pending' ? `<button class="btn bb bxs" onclick="openQt('${r.id}')">💰 填入報價</button>` : ''}
+        ${r.status==='quoted' ? `<button class="btn bb bxs" onclick="openQt('${r.id}')">✏️ 修改報價</button><button class="btn bg bxs" onclick="togglePub('${r.id}')">📢 公布</button>` : ''}
+        ${r.status==='published' ? `<button class="btn bw bxs" onclick="togglePub('${r.id}')">🔒 取消公布</button><button class="btn bb bxs" onclick="openQt('${r.id}')">✏️ 修改報價</button>` : ''}
+        <button class="btn bw bxs" onclick="showList('${r.id}','cfm')">✅ 確認名單 (${r.cfms.length})</button>
+        <button class="btn bw bxs" onclick="showList('${r.id}','flw')">🙋 跟單名單 (${r.flws.length})</button>
+      </div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════
+// ADMIN: SHOW LIST
+// ════════════════════════════════════
+function showList(id, tp) {
+  const d=ld(), inq=d.inqs.find(r=>r.id===id);
+  const list = tp==='cfm' ? inq.cfms : inq.flws;
+  const title = tp==='cfm' ? '✅ 確認接受名單' : '🙋 跟單意願名單';
+  document.getElementById('ls-title').textContent = `${title} — ${id}（${list.length} 筆）`;
+  if (!list.length) {
+    document.getElementById('ls-body').innerHTML = '<div class="empty"><div class="ei">📭</div><p>尚無記錄</p></div>';
+  } else {
+    document.getElementById('ls-body').innerHTML = `
+      <table><thead><tr>
+        <th>#</th><th>時間</th>
+        ${tp==='flw'?'<th>理專</th><th>員編</th><th>分行</th>':'<th>員編</th>'}
+        <th>客戶名稱</th><th>金額(USD)</th><th>備註</th>
+      </tr></thead><tbody>
+      ${list.map((l,i)=>`<tr>
+        <td>${i+1}</td><td>${l.time}</td>
+        ${tp==='flw'?`<td>${l.nm}</td><td>${l.ei}</td><td>${l.br}</td>`:`<td>${l.ei||'—'}</td>`}
+        <td>${l.cl}</td><td>${fmt(l.am)}</td><td>${l.nt||'—'}</td>
+      </tr>`).join('')}
+      </tbody></table>`;
+  }
+  sm('m-ls');
+}
+
+// ════════════════════════════════════
+// STATS
+// ════════════════════════════════════
 function renderStats() {
-  document.getElementById('stat-total').textContent = INQS.length;
-  const branches = new Set(INQS.map(r => r.branch)).size;
-  document.getElementById('stat-branch').textContent = branches;
-  const today = new Date().toLocaleDateString('zh-TW');
-  const todayCount = INQS.filter(r => r.time.startsWith(today)).length;
-  document.getElementById('stat-today').textContent = todayCount;
+  const d=ld();
+  document.getElementById('st-tot').textContent = d.inqs.length;
+  document.getElementById('st-pnd').textContent = d.inqs.filter(r=>r.status==='pending').length;
+  document.getElementById('st-pub').textContent = d.inqs.filter(r=>r.status==='published').length;
+  document.getElementById('st-flw').textContent = d.inqs.reduce((s,r)=>s+r.flws.length, 0);
 }
 
-/* ─── EXPORT EXCEL ─── */
-function exportExcel() {
-  if (!INQS.length) { alert('尚無詢價記錄'); return; }
+// ════════════════════════════════════
+// EXPORT EXCEL (3 sheets)
+// ════════════════════════════════════
+function exportXL() {
+  const d=ld();
+  if (!d.inqs.length) { alert('尚無詢價記錄'); return; }
+  const wb = XLSX.utils.book_new();
 
-  const hdrs = [
-    'Product','Currency','Wrapper','Tenor (m)',
+  // Sheet 1: FCN 詢價主表
+  const h1 = ['ID','詢價時間','狀態','分行','理專','員編','客戶','金額(USD)',
+    'Product','Currency','Wrapper','Tenor(m)',
     'BBG Code 1','BBG Code 2','BBG Code 3','BBG Code 4','BBG Code 5',
-    'Strike (%)','Barrier Type','KI Barrier (%)','KO Type','Guaranteed Periods','KO Barrier (%)',
-    'Coupon p.a. (%)','Observation Frequency (m)','Reoffer (%)','Date Schedule Config',
-    'Issue Date','Final Fixing Date','Redemption Date','Note','ID',
-    '分行','理專姓名','員工編號','客戶名稱','詢價金額(USD)','詢價時間','報價基準日'
-  ];
-
-  const rows = INQS.map((r, i) => [
-    r.product, r.currency, r.wrapper, Number(r.tenor),
-    r.bbg1, r.bbg2, r.bbg3, r.bbg4, r.bbg5,
-    Number(r.strike), r.barrier, Number(r.ki), r.kotype, Number(r.gp), Number(r.ko),
-    Number(r.coupon), Number(r.obs), Number(r.reoffer), Number(r.dsc),
-    r.issueDate, r.fixingDate, r.redeemDate, r.note || '',
-    `EP_${r.id.toString(16).toUpperCase().slice(-12)}`,
-    r.branch, r.name, r.empid, r.client || '',
-    r.amount ? Number(r.amount) : '', r.time, r.qdate
+    'Barrier Type','Strike(%)','KI Barrier(%)','KO Type','Guaranteed Periods','KO Barrier(%)',
+    '理專填 UF(%)','理專填 Coupon(%)',
+    '報價 Coupon(%)','報價 UF(%)','Reoffer(%)',
+    '確認筆數','跟單筆數','備註'];
+  const r1 = d.inqs.map(r => [
+    r.id, r.time, {pending:'詢價中',quoted:'已報價',published:'已公布'}[r.status],
+    r.br, r.nm, r.ei, r.cl||'', r.am||'',
+    'FCN', r.cy, r.wr, Number(r.tn),
+    r.b1, r.b2||'', r.b3||'', r.b4||'', r.b5||'',
+    r.bt, Number(r.sk), Number(r.ki), 'Daily Memory', Number(r.gp), Number(r.ko),
+    r.uf_in||'', r.cp_in||'',
+    r.qt_cp||'', r.qt_uf||'', r.qt_ro||'',
+    r.cfms.length, r.flws.length, r.nt||''
   ]);
+  const ws1 = XLSX.utils.aoa_to_sheet([h1,...r1]);
+  ws1['!cols'] = [12,16,8,10,8,8,12,12, 8,10,8,9, 10,10,10,10,10, 10,9,11,12,16,11, 12,14, 14,10,10, 8,8,16].map(w=>({wch:w}));
+  styleHdr(ws1, h1.length);
+  XLSX.utils.book_append_sheet(wb, ws1, 'FCN詢價主表');
 
-  const ws = XLSX.utils.aoa_to_sheet([hdrs, ...rows]);
-  const colW = [8,10,8,9, 12,12,12,12,12, 9,12,12,14,17,12,
-                14,20,12,18, 12,16,14,20,18, 12,10,10,12,14,18,12];
-  ws['!cols'] = colW.map(w => ({ wch: w }));
+  // Sheet 2: 確認名單
+  const h2 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','確認時間','員編','客戶名稱','金額(USD)','備註'];
+  const r2 = [];
+  d.inqs.forEach(r => r.cfms.forEach(c => r2.push([
+    r.id, [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
+    r.qt_cp||'', r.qt_ro||'', c.time, c.ei||'', c.cl, c.am||'', c.nt||''
+  ])));
+  const ws2 = XLSX.utils.aoa_to_sheet([h2,...r2]);
+  ws2['!cols'] = [14,26,12,10,16,8,14,12,16].map(w=>({wch:w}));
+  styleHdr(ws2, h2.length);
+  XLSX.utils.book_append_sheet(wb, ws2, '確認名單');
 
-  // Style header row
-  const range = XLSX.utils.decode_range(ws['!ref']);
-  for (let c = range.s.c; c <= range.e.c; c++) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c });
-    if (!ws[addr]) continue;
-    ws[addr].s = {
-      fill: { patternType: 'solid', fgColor: { rgb: '1D9E75' } },
-      font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
-      alignment: { horizontal: 'center', vertical: 'center' }
+  // Sheet 3: 跟單意願名單
+  const h3 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','跟單時間','理專姓名','員編','分行','客戶名稱','金額(USD)','備註'];
+  const r3 = [];
+  d.inqs.forEach(r => r.flws.forEach(f => r3.push([
+    r.id, [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
+    r.qt_cp||'', r.qt_ro||'', f.time, f.nm, f.ei, f.br, f.cl, f.am||'', f.nt||''
+  ])));
+  const ws3 = XLSX.utils.aoa_to_sheet([h3,...r3]);
+  ws3['!cols'] = [14,26,12,10,16,8,8,10,14,12,16].map(w=>({wch:w}));
+  styleHdr(ws3, h3.length);
+  XLSX.utils.book_append_sheet(wb, ws3, '跟單意願名單');
+
+  XLSX.writeFile(wb, `FCN詢價系統_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`);
+}
+
+function styleHdr(ws, len) {
+  for (let c=0; c<len; c++) {
+    const a = XLSX.utils.encode_cell({r:0,c});
+    if (!ws[a]) continue;
+    ws[a].s = {
+      fill:{patternType:'solid',fgColor:{rgb:'2A9D80'}},
+      font:{bold:true,color:{rgb:'FFFFFF'},sz:10},
+      alignment:{horizontal:'center'}
     };
   }
-  // Coupon column green
-  const ci = hdrs.indexOf('Coupon p.a. (%)');
-  // Reoffer column blue
-  const ri = hdrs.indexOf('Reoffer (%)');
-  for (let r = 1; r <= rows.length; r++) {
-    const ca = XLSX.utils.encode_cell({ r, c: ci });
-    if (ws[ca]) ws[ca].s = { font: { bold: true, color: { rgb: '2A9D80' } } };
-    const ra = XLSX.utils.encode_cell({ r, c: ri });
-    if (ws[ra]) ws[ra].s = { font: { bold: true, color: { rgb: '2563EB' } } };
-  }
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'FCN Quotations');
-
-  // Branch summary sheet
-  const brMap = {};
-  INQS.forEach(r => {
-    if (!brMap[r.branch]) brMap[r.branch] = { count: 0, amt: 0 };
-    brMap[r.branch].count++;
-    brMap[r.branch].amt += Number(r.amount) || 0;
-  });
-  const ws2 = XLSX.utils.aoa_to_sheet([
-    ['分行', '詢價筆數', '詢價總金額(USD)'],
-    ...Object.entries(brMap).map(([b, v]) => [b, v.count, v.amt])
-  ]);
-  ws2['!cols'] = [{ wch: 16 }, { wch: 12 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(wb, ws2, '分行統計');
-
-  const d = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  XLSX.writeFile(wb, `FCN詢價記錄_${d}.xlsx`);
 }
 
-/* ─── CLEAR ─── */
-function clearRecords() {
-  if (!confirm('確定要清除所有詢價記錄？此動作無法復原。')) return;
-  INQS = [];
-  localStorage.setItem(SK_INQS, JSON.stringify(INQS));
-  renderTable();
-  renderStats();
+// ════════════════════════════════════
+// CLEAR ALL
+// ════════════════════════════════════
+function clearAll() {
+  if (!confirm('確定清除所有詢價記錄？此動作無法復原')) return;
+  const d=ld(); d.inqs=[]; sd(d);
+  renderAdmList(); renderStats(); renderBoard();
 }
 
-// Init
-renderCondition();
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+(function init() {
+  initBBG();
+  const d = ld();
+  if (d.cond) applyDefaults(d.cond);
+  renderBoard();
+})();
 </script>
 </body>
 </html>
