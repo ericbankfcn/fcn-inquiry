@@ -417,10 +417,11 @@ hr{border:none;border-top:1px solid var(--bd);margin:14px 0}
           <div class="f"><label>BBG Code 5</label><select id="eb5" onchange="syncBBG('e')"><option value="">— 不選 —</option></select></div>
         </div>
 
-        <div class="stl" style="margin-top:4px">報價基準日期</div>
-        <div class="row c3">
+        <div class="stl" style="margin-top:4px">報價基準日期與其他設定</div>
+        <div class="row c4">
           <div class="f"><label>報價基準日</label><input type="date" id="ec-qd"></div>
           <div class="f"><label>Issue Date</label><input type="date" id="ec-is"></div>
+          <div class="f"><label>Observation Frequency (m)</label><input type="number" id="ec-obs" value="1" min="1"></div>
           <div class="f"><label>Date Schedule Config</label><input type="number" id="ec-ds" value="7"></div>
         </div>
 
@@ -564,7 +565,7 @@ const BBG = ['NVDA UW','GOOGL UW','TSLA UW','TSM UN','META UW','MSFT UW','AMZN U
 const DEF_COND = {
   cy:'USD', tn:'6', bt:'AKI', sk:'80', ki:'70', gp:'2', ko:'100',
   b1:'NVDA UW', b2:'GOOGL UW', b3:'TSM UN', b4:'', b5:'',
-  qd: new Date().toISOString().slice(0,10), is:'', ds:'7'
+  obs:'1', ds:'7', is:'', qd: new Date().toISOString().slice(0,10)
 };
 
 function ld() { return JSON.parse(localStorage.getItem(SK)) || {cond:{...DEF_COND}, inqs:[]}; }
@@ -728,44 +729,82 @@ function lookupMine() {
 }
 
 // ════════════════════════════════════
-// PUBLIC BOARD
+// PUBLIC BOARD — 菜單海報風格
 // ════════════════════════════════════
 function renderBoard() {
   const d = ld();
   const pub = d.inqs.filter(r => r.status === 'published');
   const el = document.getElementById('pub-board');
   if (!pub.length) { el.innerHTML = '<div class="empty"><div class="ei">📭</div><p>目前尚無公布報價</p></div>'; return; }
-  el.innerHTML = pub.map(r => `
-    <div class="qc">
-      <div class="qc-hd">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;font-weight:700">${r.id}</span>
-          ${badge(r.status)}
-        </div>
-        <span style="font-size:11px;color:var(--t3)">${r.time}</span>
+  const bbgName = {
+    'NVDA UW':'輝達 NVDA','GOOGL UW':'谷歌 GOOGL','TSLA UW':'特斯拉 TSLA',
+    'TSM UN':'台積電 TSM','META UW':'Meta META','MSFT UW':'微軟 MSFT',
+    'AMZN UW':'亞馬遜 AMZN','AAPL UW':'蘋果 AAPL'
+  };
+  const bbgColor = {
+    'NVDA UW':'#1a6b3a','GOOGL UW':'#1a4a8c','TSLA UW':'#8c1a1a',
+    'TSM UN':'#4a1a8c','META UW':'#1a6b6b','MSFT UW':'#1a5c8c',
+    'AMZN UW':'#8c5a1a','AAPL UW':'#555555'
+  };
+  el.innerHTML = `
+  <style>
+  .mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .mc{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);border:1px solid #e5e7eb;transition:.2s}
+  .mc:hover{box-shadow:0 8px 30px rgba(0,0,0,.15);transform:translateY(-2px)}
+  .mc-top{background:linear-gradient(135deg,#0d5c42,#1a8c62);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+  .mc-bank{font-size:11px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:.3px}
+  .mc-dept{font-size:10px;color:rgba(255,255,255,.65)}
+  .mc-dt{font-size:10px;color:rgba(255,255,255,.65)}
+  .mc-hero{background:linear-gradient(135deg,#0a4a33,#136b4a);padding:18px 16px 14px;text-align:center}
+  .mc-clbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+  .mc-cv{font-size:48px;font-weight:900;color:#ffd700;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+  .mc-cv span{font-size:26px;font-weight:700}
+  .mc-csub{font-size:12px;color:rgba(255,255,255,.75);margin-top:3px}
+  .mc-stocks{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;padding:10px 14px;background:#f8fffe;border-bottom:1px solid #e5e7eb}
+  .mc-stk{padding:4px 9px;border-radius:7px;color:#fff;font-size:11px;font-weight:700}
+  .mc-ps{display:grid;grid-template-columns:1fr 1fr 1fr;background:#fff}
+  .mc-p{padding:9px 10px;text-align:center;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0}
+  .mc-p:nth-child(3n){border-right:none}
+  .mc-p .pp{font-size:9px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+  .mc-p .pv{font-size:14px;font-weight:800;color:#1a1a1a}
+  .mc-p .pv.hi{color:#2a9d80}
+  .mc-w{font-size:10px;color:#9ca3af;padding:7px 12px;text-align:center;background:#fafafa;border-top:1px solid #f0f0f0;line-height:1.4}
+  .mc-ft{padding:9px 12px;display:flex;align-items:center;justify-content:space-between;background:#f8fffe;gap:8px;flex-wrap:wrap}
+  .mc-cnt{font-size:11px;color:#6b7280}
+  </style>
+  <div class="mg">
+  ${pub.map(r => {
+    const stocks = [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean);
+    const today = new Date().toLocaleDateString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit'});
+    return `<div class="mc">
+      <div class="mc-top">
+        <div><div class="mc-bank">三信商業銀行</div><div class="mc-dept">財富管理部</div></div>
+        <div class="mc-dt">${today}</div>
       </div>
-      <div class="qc-bd">
-        <div class="qc-grid">
-          <div class="qi"><div class="ql">Coupon p.a.</div><div class="qv hi">${r.qt_cp ? r.qt_cp+'%' : '—'}</div></div>
-          <div class="qi"><div class="ql">Reoffer (%)</div><div class="qv bl">${r.qt_ro ? r.qt_ro+'%' : '—'}</div></div>
-          <div class="qi"><div class="ql">Currency / Tenor</div><div class="qv">${r.cy} / ${r.tn}m</div></div>
-          <div class="qi"><div class="ql">KI Barrier</div><div class="qv">${r.ki}% (${r.bt})</div></div>
-        </div>
-        <div class="qc-tags">${tags(r)}</div>
-        <div class="qc-meta">
-          Strike: ${r.sk}% ・ KO Barrier: ${r.ko}% ・ Guaranteed Periods: ${r.gp} ・ KO Type: Daily Memory
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:6px">
-          跟單意願: <strong style="color:var(--t)">${r.flws.length}</strong> 筆 ／ 原詢價確認: <strong style="color:var(--t)">${r.cfms.length}</strong> 筆
-        </div>
-        <div class="qc-foot">
-          <button class="btn bg bsm" onclick="openFlw('${r.id}')">🙋 我有跟單意願</button>
-        </div>
+      <div class="mc-hero">
+        <div class="mc-clbl">年化配息率 Coupon p.a.</div>
+        <div class="mc-cv">${r.qt_cp||'—'}<span>%</span></div>
+        <div class="mc-csub">${r.cy} · ${r.tn}個月 · 領${r.qt_cp||'—'}%高息 用${r.sk}%接股</div>
       </div>
-    </div>`).join('');
+      <div class="mc-stocks">${stocks.map(b=>`<div class="mc-stk" style="background:${bbgColor[b]||'#555'}">${bbgName[b]||b}</div>`).join('')}</div>
+      <div class="mc-ps">
+        <div class="mc-p"><div class="pp">不比價 Non Call</div><div class="pv">${r.gp}M</div></div>
+        <div class="mc-p"><div class="pp">合約天期 Tenor</div><div class="pv">${r.tn}M</div></div>
+        <div class="mc-p"><div class="pp">提前贖回 KO</div><div class="pv">${r.ko}%</div></div>
+        <div class="mc-p"><div class="pp">執行價 Strike</div><div class="pv hi">${r.sk}%</div></div>
+        <div class="mc-p"><div class="pp">下限 ${r.bt}</div><div class="pv hi">${r.ki}%</div></div>
+        <div class="mc-p"><div class="pp">幣別</div><div class="pv">${r.cy}</div></div>
+      </div>
+      <div class="mc-w">※ 僅限專業投資人且非特殊客群參考<br>申購結構型商品須同時符合專業知識及交易經驗</div>
+      <div class="mc-ft">
+        <div class="mc-cnt">跟單意願：<strong>${r.flws.length}</strong> 筆 ／ 確認：<strong>${r.cfms.length}</strong> 筆</div>
+        <button class="btn bg bsm" onclick="openFlw('${r.id}')">🙋 我有跟單意願</button>
+      </div>
+    </div>`;
+  }).join('')}
+  </div>`;
 }
 
-// ════════════════════════════════════
 // CONFIRM (原詢價理專確認)
 // ════════════════════════════════════
 function openCfm(id) {
@@ -847,7 +886,7 @@ function loadDefaults() {
   setVal('ec-cy', c.cy); setVal('ec-tn', c.tn); setVal('ec-bt', c.bt);
   setVal('ec-sk', c.sk); setVal('ec-ki', c.ki); setVal('ec-gp', c.gp); setVal('ec-ko', c.ko);
   setVal('eb1', c.b1); setVal('eb2', c.b2); setVal('eb3', c.b3); setVal('eb4', c.b4); setVal('eb5', c.b5);
-  setVal('ec-qd', c.qd); setVal('ec-is', c.is); setVal('ec-ds', c.ds);
+  setVal('ec-qd', c.qd); setVal('ec-is', c.is); setVal('ec-obs', c.obs||'1'); setVal('ec-ds', c.ds||'7');
   setVal('ec-eid',''); setVal('ec-pw','');
   syncBBG('e');
   cal('edit-al');
@@ -862,12 +901,11 @@ function saveDefaults() {
     cy:gv('ec-cy'), tn:gv('ec-tn'), bt:gv('ec-bt'),
     sk:gv('ec-sk'), ki:gv('ec-ki'), gp:gv('ec-gp'), ko:gv('ec-ko'),
     b1:gv('eb1'), b2:gv('eb2'), b3:gv('eb3'), b4:gv('eb4'), b5:gv('eb5'),
-    qd:gv('ec-qd'), is:gv('ec-is'), ds:gv('ec-ds')
+    qd:gv('ec-qd'), is:gv('ec-is'), obs:gv('ec-obs')||'1', ds:gv('ec-ds')||'7'
   };
   sd(d);
   sal('edit-al','ok','✅ 預設條件已儲存！理專填寫詢價時將套用此設定');
   setTimeout(()=>cal('edit-al'), 3000);
-  // also pre-fill advisor form with new defaults
   applyDefaults(d.cond);
 }
 
@@ -991,61 +1029,100 @@ function renderStats() {
 }
 
 // ════════════════════════════════════
-// EXPORT EXCEL (3 sheets)
+// ════════════════════════════════════
+// EXPORT EXCEL — 完全比照管理人員報表格式
 // ════════════════════════════════════
 function exportXL() {
   const d=ld();
   if (!d.inqs.length) { alert('尚無詢價記錄'); return; }
+  const cond = d.cond || DEF_COND;
   const wb = XLSX.utils.book_new();
 
-  // Sheet 1: FCN 詢價主表
-  const h1 = ['ID','詢價時間','狀態','分行','理專','員編','客戶','金額(USD)',
-    'Product','Currency','Wrapper','Tenor(m)',
+  function calcDates(issueStr, tenorM) {
+    try {
+      const iss = new Date(issueStr);
+      const fix = new Date(iss); fix.setMonth(fix.getMonth() + parseInt(tenorM));
+      const red = new Date(fix); red.setDate(red.getDate() + parseInt(cond.ds||7));
+      const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fmt = d => `${String(d.getDate()).padStart(2,'0')}-${mo[d.getMonth()]}-${String(d.getFullYear()).slice(2)}`;
+      return { issue: fmt(iss), fixing: fmt(fix), redeem: fmt(red) };
+    } catch { return { issue:'—', fixing:'—', redeem:'—' }; }
+  }
+
+  // Sheet 1: FCN 詢價報表（完全比照第二張圖欄位順序）
+  const h1 = [
+    'Product','Currency','Wrapper','Tenor (m)',
     'BBG Code 1','BBG Code 2','BBG Code 3','BBG Code 4','BBG Code 5',
-    'Barrier Type','Strike(%)','KI Barrier(%)','KO Type','Guaranteed Periods','KO Barrier(%)',
-    '理專填 UF(%)','理專填 Coupon(%)',
-    '報價 Coupon(%)','報價 UF(%)','Reoffer(%)',
-    '確認筆數','跟單筆數','備註'];
-  const r1 = d.inqs.map(r => [
-    r.id, r.time, {pending:'詢價中',quoted:'已報價',published:'已公布'}[r.status],
-    r.br, r.nm, r.ei, r.cl||'', r.am||'',
-    'FCN', r.cy, r.wr, Number(r.tn),
-    r.b1, r.b2||'', r.b3||'', r.b4||'', r.b5||'',
-    r.bt, Number(r.sk), Number(r.ki), 'Daily Memory', Number(r.gp), Number(r.ko),
-    r.uf_in||'', r.cp_in||'',
-    r.qt_cp||'', r.qt_uf||'', r.qt_ro||'',
-    r.cfms.length, r.flws.length, r.nt||''
-  ]);
+    'Strike (%)','Barrier Type','KI Barrier (%)','KO Type',
+    'Guaranteed Periods','KO Barrier (%)',
+    'Coupon p.a. (%)','Observation Frequency (m)','Reoffer (%)','Date Schedule Config',
+    'Issue Date','Final Fixing Date','Redemption Date','Note','ID'
+  ];
+  const r1 = d.inqs.map(r => {
+    const dt = calcDates(cond.is, r.tn);
+    const reoffer = r.qt_ro || (r.qt_uf ? (100-parseFloat(r.qt_uf)).toFixed(2) : '');
+    return [
+      'FCN', r.cy, 'EMTN', Number(r.tn),
+      r.b1, r.b2||'', r.b3||'', r.b4||'', r.b5||'',
+      Number(r.sk), r.bt, Number(r.ki), 'Daily Memory',
+      Number(r.gp), Number(r.ko),
+      r.qt_cp ? Number(r.qt_cp) : '', Number(cond.obs||1),
+      reoffer ? Number(reoffer) : '', Number(cond.ds||7),
+      dt.issue, dt.fixing, dt.redeem,
+      r.nt||'', `EP_${r.id.replace('INQ','').slice(-8)}`
+    ];
+  });
   const ws1 = XLSX.utils.aoa_to_sheet([h1,...r1]);
-  ws1['!cols'] = [12,16,8,10,8,8,12,12, 8,10,8,9, 10,10,10,10,10, 10,9,11,12,16,11, 12,14, 14,10,10, 8,8,16].map(w=>({wch:w}));
+  ws1['!cols'] = [8,10,8,9, 11,11,11,11,11, 9,12,12,13, 17,11, 14,22,11,20, 12,15,14,20,14].map(w=>({wch:w}));
   styleHdr(ws1, h1.length);
-  XLSX.utils.book_append_sheet(wb, ws1, 'FCN詢價主表');
+  const ciC = h1.indexOf('Coupon p.a. (%)'), ciR = h1.indexOf('Reoffer (%)');
+  for (let row=1; row<=r1.length; row++) {
+    const ac=XLSX.utils.encode_cell({r:row,c:ciC}); if(ws1[ac]) ws1[ac].s={font:{bold:true,color:{rgb:'2A9D80'}}};
+    const ar=XLSX.utils.encode_cell({r:row,c:ciR}); if(ws1[ar]) ws1[ar].s={font:{bold:true,color:{rgb:'2563EB'}}};
+  }
+  XLSX.utils.book_append_sheet(wb, ws1, 'FCN詢價報表');
 
-  // Sheet 2: 確認名單
-  const h2 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','確認時間','員編','客戶名稱','金額(USD)','備註'];
-  const r2 = [];
-  d.inqs.forEach(r => r.cfms.forEach(c => r2.push([
-    r.id, [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
-    r.qt_cp||'', r.qt_ro||'', c.time, c.ei||'', c.cl, c.am||'', c.nt||''
-  ])));
+  // Sheet 2: 理專詢價明細
+  const h2 = ['ID','詢價時間','狀態','分行','理專','員編','客戶','詢價金額(USD)',
+    '理專填 UF(%)','理專填 Coupon(%)','確認筆數','跟單筆數','備註'];
+  const r2 = d.inqs.map(r => [
+    `EP_${r.id.replace('INQ','').slice(-8)}`, r.time,
+    {pending:'詢價中',quoted:'已報價',published:'已公布'}[r.status],
+    r.br, r.nm, r.ei, r.cl||'', r.am||'',
+    r.uf_in||'', r.cp_in||'', r.cfms.length, r.flws.length, r.nt||''
+  ]);
   const ws2 = XLSX.utils.aoa_to_sheet([h2,...r2]);
-  ws2['!cols'] = [14,26,12,10,16,8,14,12,16].map(w=>({wch:w}));
+  ws2['!cols'] = [14,16,8,10,8,8,12,14,12,14,8,8,16].map(w=>({wch:w}));
   styleHdr(ws2, h2.length);
-  XLSX.utils.book_append_sheet(wb, ws2, '確認名單');
+  XLSX.utils.book_append_sheet(wb, ws2, '理專詢價明細');
 
-  // Sheet 3: 跟單意願名單
-  const h3 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','跟單時間','理專姓名','員編','分行','客戶名稱','金額(USD)','備註'];
+  // Sheet 3: 確認名單
+  const h3 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','確認時間','員編','客戶名稱','金額(USD)','備註'];
   const r3 = [];
-  d.inqs.forEach(r => r.flws.forEach(f => r3.push([
-    r.id, [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
-    r.qt_cp||'', r.qt_ro||'', f.time, f.nm, f.ei, f.br, f.cl, f.am||'', f.nt||''
+  d.inqs.forEach(r => r.cfms.forEach(c2 => r3.push([
+    `EP_${r.id.replace('INQ','').slice(-8)}`,
+    [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
+    r.qt_cp||'', r.qt_ro||'', c2.time, c2.ei||'', c2.cl, c2.am||'', c2.nt||''
   ])));
   const ws3 = XLSX.utils.aoa_to_sheet([h3,...r3]);
-  ws3['!cols'] = [14,26,12,10,16,8,8,10,14,12,16].map(w=>({wch:w}));
+  ws3['!cols'] = [14,26,12,10,16,8,14,12,16].map(w=>({wch:w}));
   styleHdr(ws3, h3.length);
-  XLSX.utils.book_append_sheet(wb, ws3, '跟單意願名單');
+  XLSX.utils.book_append_sheet(wb, ws3, '確認名單');
 
-  XLSX.writeFile(wb, `FCN詢價系統_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`);
+  // Sheet 4: 跟單意願名單
+  const h4 = ['詢價ID','BBG標的','報價Coupon%','Reoffer%','跟單時間','理專姓名','員編','分行','客戶名稱','金額(USD)','備註'];
+  const r4 = [];
+  d.inqs.forEach(r => r.flws.forEach(f => r4.push([
+    `EP_${r.id.replace('INQ','').slice(-8)}`,
+    [r.b1,r.b2,r.b3,r.b4,r.b5].filter(Boolean).join(' / '),
+    r.qt_cp||'', r.qt_ro||'', f.time, f.nm, f.ei, f.br, f.cl, f.am||'', f.nt||''
+  ])));
+  const ws4 = XLSX.utils.aoa_to_sheet([h4,...r4]);
+  ws4['!cols'] = [14,26,12,10,16,8,8,10,14,12,16].map(w=>({wch:w}));
+  styleHdr(ws4, h4.length);
+  XLSX.utils.book_append_sheet(wb, ws4, '跟單意願名單');
+
+  XLSX.writeFile(wb, `FCN詢價報表_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.xlsx`);
 }
 
 function styleHdr(ws, len) {
